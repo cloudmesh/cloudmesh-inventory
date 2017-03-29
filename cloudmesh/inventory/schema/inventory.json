@@ -1,0 +1,18 @@
+{
+    "host": {
+	"name": "g001",
+	"cluster": "gregor",
+	"label": "g001",
+	"service": "compute",
+	"os": "ubuntu",
+	"ip": {
+	    "public": "127.0.0.1",
+	    "private": "127.0.0.1"
+        },
+	"project": "cloudmesh",
+	"owners": ["gvonlasz"], 
+	"comment": "a test",
+	"description": "host for computation",
+	"metadata": "None"
+    }
+}
