@@ -15,29 +15,21 @@ import os.path
 
 class inventory(object):
 
+
     def info(self):
+        self.filename = path_expand("~/.cloudmesh/inventory.yaml")
+
         banner("Configuration")
+        Console.ok('Data File: {:}'.format(self.filename))
         Console.ok ('Object Attibutes: {:}'.format(', '.join(self.order)))
         Console.ok ('Objects: {:}'.format(len(self.data)))
-        Console.ok ('Configuration File: {:}'.format(self.config_filename))
-        Console.ok ('Configuration:')
-
-        print(self.config)
-
-        try:
-            config = ConfigDict(filename=self.config_filename)
-        except Exception, e:
-            Console.error("Problem reading the yaml file {:}".format(self.config_filename))
-            Console.error("Please check if the file exists or is empty")
-            print (e)
-
-
-        banner("")
+        print (70 * "#")
 
     def __init__(self):
 
         self.order = [
             "host",
+            "name",
             "cluster",
             "label",
             "service",
@@ -52,25 +44,23 @@ class inventory(object):
 
         self.data = {}
 
-        self.config_filename = config_file("/cloudmesh_inventory.yaml")
-        self.config = ConfigDict(filename=self.config_filename)
+        self.filename = path_expand("~/.cloudmesh/inventory.yaml")
+        self.read(self.filename)
+        
 
-        self.datafile = self.config.get("cloudmesh.system.data")
-        self.read(self.datafile)
+    def read(self, filename=None):
+        if filename is not None:
+            self.filename = filename
 
-    def read(self, filename=None, format="yaml"):
-        if filename is None:
-            filename = self.datafile
-
-        if not os.path.isfile(filename):
-            self.save(filename)
-        stream = open(filename, "r")
+        #if not os.path.isfile(filename):
+        #    self.save(filename)
+        stream = open(self.filename, "r")
         self.data = yaml.safe_load(stream)
         stream.close()
 
     def save(self, filename=None, format="yaml"):
         if filename is None:
-            filename = self.datafile
+            filename = self.filename
         with open(filename, 'w') as yaml_file:
             yaml_file.write(self.list (format=format))
 
@@ -98,8 +88,8 @@ class inventory(object):
     def list(self, format='dict', sort_keys=True, order=None):
         if order is None:
             order = self.order
-        header = ['Id'] +  order
-        return dict_printer(self.data,
+        header =  order
+        return Printer.dict(self.data,
                             header=header,
                             order=order,
                             output=format,
@@ -135,6 +125,11 @@ if __name__ == "__main__":
     i = inventory()
     banner("Info")
     i.info()
+
+    for output in ['dict', 'yaml', 'csv', 'table']:
+        banner(output)
+        print(i.list(format=output))
+
 
     banner("changing values")
     i.add(host="i1", cluster="india", label="india")

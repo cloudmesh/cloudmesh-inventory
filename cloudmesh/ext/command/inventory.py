@@ -4,6 +4,7 @@ from cloudmesh.shell.command import PluginCommand
 from cloudmesh.inventory.data import inventory
 import hostlist
 from cloudmesh.common.locations import config_file
+from cloudmesh.common.console import Console
 
 class InventoryCommand(PluginCommand):
 
@@ -98,7 +99,7 @@ class InventoryCommand(PluginCommand):
                 clones the values for x5, x6 from x3
 
         """
-        print(arguments)
+        # print(arguments)
         filename = config_file("/cloudmesh_inventory.yaml")
 
         sorted_keys = True
