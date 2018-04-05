@@ -1,0 +1,82 @@
+d1:
+  cluster: delta
+  comment: ''
+  host: d1
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: ''
+  service: ''
+d2:
+  cluster: delta
+  comment: ''
+  host: d2
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: ''
+  service: ''
+d3:
+  cluster: delta
+  comment: ''
+  host: d3
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: ''
+  service: ''
+d4:
+  cluster: delta
+  comment: ''
+  host: d4
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: ''
+  service: ''
+g001:
+  cluster: gregor
+  comment: test
+  host: g001
+  ip: 127.0.0.1
+  label: g001
+  metadata: None
+  name: g001
+  owners: gvonlasz
+  project: cloudmesh
+  service: compute
+g002:
+  cluster: gregor
+  comment: test
+  host: g002
+  ip: 127.0.0.1
+  label: g002
+  metadata: None
+  name: g002
+  owners: gvonlasz
+  project: cloudmesh
+  service: compute
+i1:
+  cluster: india
+  comment: ''
+  host: i1
+  ip: ''
+  label: india
+  name: ''
+  owners: ''
+  project: ''
+  service: ''
+i2:
+  cluster: india
+  comment: ''
+  host: i2
+  ip: ''
+  label: gregor
+  name: ''
+  owners: ''
+  project: ''
+  service: ''

@@ -48,8 +48,7 @@ host = {
     }
 }
 
-
-
+# noinspection SpellCheckingInspection
 eve_settings = {
     'MONGO_HOST': 'localhost',
     'MONGO_DBNAME': 'testing',

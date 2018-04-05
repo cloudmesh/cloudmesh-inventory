@@ -38,11 +38,11 @@ flake8
 version = readfile("VERSION")[0].strip()
 readme = readfile('README.rst')
 
-NAME = "cloudmesh.aws"
-DESCRIPTION = "A command called command for the cloudmesh shell"
+NAME = "cloudmesh.inventory"
+DESCRIPTION = "A command called inventory and foo for the cloudmesh shell"
 AUTHOR = "Gregor von Laszewski"
 AUTHOR_EMAIL = "laszewski@gmail.com"
-URL = "https://github.com/cloudmesh/extbar"
+URL = "https://github.com/cloudmesh/cloudmesh.inventory"
 LONG_DESCRIPTION = "\n".join(readme)
 
 
