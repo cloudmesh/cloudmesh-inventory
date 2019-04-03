@@ -24,35 +24,37 @@ def readfile(filename):
 
 
 #requiers = readfile ('requirements.txt')
+#
+# add minimum requirements here
+#
 requiers = """
 psutil
 pygments
-tox
-detox
-coverage
-flake8
 """.split("\n")
 
 # dependency_links = ['http://github.com/nicolaiarocci/eve.git@develop']
 
 version = readfile("VERSION")[0].strip()
-readme = readfile('README.rst')
+
+with open('README.md') as f:
+    long_description = f.read()
+
+
 
 NAME = "cloudmesh.inventory"
 DESCRIPTION = "A command called inventory and foo for the cloudmesh shell"
 AUTHOR = "Gregor von Laszewski"
 AUTHOR_EMAIL = "laszewski@gmail.com"
 URL = "https://github.com/cloudmesh/cloudmesh.inventory"
-LONG_DESCRIPTION = "\n".join(readme)
 
 
-setup \
-(
+setup(
     name=NAME,
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     version=version,
     license="Apache 2.0",
     url=URL,
@@ -71,6 +73,7 @@ setup \
     tests_require=[
         "flake8",
         "coverage",
+        "tox",
     ],
     zip_safe=False,
     namespace_packages=['cloudmesh'],

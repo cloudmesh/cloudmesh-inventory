@@ -125,10 +125,10 @@ register: dist
 	@echo "######################################"
 	@echo "# $(VERSION)"
 	@echo "######################################"
-	twine register dist/cloudmesh.$(package)-$(VERSION)-py2.py3-none-any.whl
-	twine register dist/cloudmesh.$(package)-$(VERSION).macosx-10.12-x86_64.tar.gz
-	twine register dist/cloudmesh.$(package)-$(VERSION).tar.gz
-	twine register dist/cloudmesh.$(package)-$(VERSION).zip
+	twine register dist/cloudmesh-$(package)-$(VERSION)-py2.py3-none-any.whl
+	twine register dist/cloudmesh-$(package)-$(VERSION).macosx-10.12-x86_64.tar.gz
+	twine register dist/cloudmesh-$(package)-$(VERSION).tar.gz
+	twine register dist/cloudmesh-$(package)-$(VERSION).zip
 
 upload: dist
 	twine upload dist/*

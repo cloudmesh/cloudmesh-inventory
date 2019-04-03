@@ -3,7 +3,7 @@ sh
 docopt
 pyaml
 simplejson
-nose
 python-hostlist
 prettytable
 pytimeparse
+cloudmesh-cmd5
