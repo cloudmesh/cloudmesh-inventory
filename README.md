@@ -1,5 +1,15 @@
 # Cloudmesh Inventory
 
+
+[![image](https://img.shields.io/travis/TankerHQ/cloudmesh-inventory.svg?branch=master)](https://travis-ci.org/TankerHQ/cloudmesn-inventory)
+
+[![image](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory)
+
+[![image](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory/)
+
+[![image](https://img.shields.io/github/license/TankerHQ/python-cloudmesh-inventory.svg)](https://github.com/TankerHQ/python-cloudmesh-inventory/blob/master/LICENSE)
+
+
 Sometimes its necessary to maintain a simple inventory. Naturally if you
 know python you can do this with dicts. However to manage a large number
 of items with repeated values its is of advantage to do this from the
