@@ -1,9 +1,3 @@
-future
-sh
-docopt
-pyaml
-simplejson
-python-hostlist
-prettytable
 pytimeparse
 cloudmesh-cmd5
+cloudmesh-sys
