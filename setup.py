@@ -42,11 +42,11 @@ with open('README.md') as f:
 
 
 
-NAME = "cloudmesh.inventory"
+NAME = "cloudmesh-inventory"
 DESCRIPTION = "A command called inventory and foo for the cloudmesh shell"
 AUTHOR = "Gregor von Laszewski"
 AUTHOR_EMAIL = "laszewski@gmail.com"
-URL = "https://github.com/cloudmesh/cloudmesh.inventory"
+URL = "https://github.com/cloudmesh/cloudmesh-inventory"
 
 
 setup(
