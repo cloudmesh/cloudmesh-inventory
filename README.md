@@ -5,7 +5,7 @@
 [![image](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory)
 [![image](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory/)
 [![image](https://img.shields.io/github/license/cloudmesh/cloudmesh-inventory.svg)](hhttps://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
-
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
 
 
 Sometimes its necessary to maintain a simple inventory. Naturally if you
