@@ -4,7 +4,6 @@
 [![image](https://img.shields.io/travis/TankerHQ/cloudmesh-inventory.svg?branch=master)](https://travis-ci.org/TankerHQ/cloudmesn-inventory)
 [![image](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory)
 [![image](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory/)
-[![image](https://img.shields.io/github/license/cloudmesh/cloudmesh-inventory.svg)](hhttps://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
 
 
