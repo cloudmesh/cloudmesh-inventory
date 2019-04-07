@@ -87,6 +87,7 @@ setup(
         "Topic :: System :: Shells",
         "Topic :: Utilities",
     ],
+    include_package_data=True,
     install_requires=requiers,
     tests_require=[
         "flake8",
