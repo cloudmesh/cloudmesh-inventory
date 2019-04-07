@@ -16,6 +16,7 @@ install:
   - pip install --user -r requirements-dev.txt
   - pip install --user cloudmesh-common
   - pip install --user cloudmesh-cmd5
+  - pip install --user cloudmesh-cloud
   - pip install --user .
   - mkdir ~/.cloudmesh
   - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-common/master/cloudmesh/etc/cloudmesh.yaml
