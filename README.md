@@ -16,7 +16,7 @@ instalation documentation.
 |  | Links |
 |---------------|-------|
 | Documentation | <https://cloudmesh.github.io/cloudmesh-cloud> |
-| Code | <https://github.com/cloudmesh/cloudmesh-cloud> |
+| Code | <https://github.com/cloudmesh/cloudmesh-inventory> |
 | Instalation Instructions | <https://github.com/cloudmesh/get> |
 
 Sometimes its necessary to maintain a simple inventory. Naturally if you
