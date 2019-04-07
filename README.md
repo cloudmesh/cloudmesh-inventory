@@ -18,6 +18,7 @@ instalation documentation.
 | Documentation | <https://cloudmesh.github.io/cloudmesh-cloud> |
 | Code | <https://github.com/cloudmesh/cloudmesh-cloud> |
 | Instalation Instructions | <https://github.com/cloudmesh/get> |
+
 Sometimes its necessary to maintain a simple inventory. Naturally if you
 know python you can do this with dicts. However to manage a large number
 of items with repeated values its is of advantage to do this from the
