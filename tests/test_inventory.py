@@ -46,3 +46,15 @@ class Test_inventory:
 
         assert "|" in t
         assert "gregor" in t
+
+
+"""
+# We need nostest for this
+
+cms inventory list
+cms inventory help
+cms help inventory
+cms inventory list d[1-3]
+cms inventory list 
+cms inventory add d[1-3] --project=openstack
+"""
