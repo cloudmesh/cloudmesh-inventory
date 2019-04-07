@@ -11,8 +11,6 @@ python:
 
 install:
   - pwd
-  - pip install --user -r requirements.txt
-  - pip install --user -r requirements-dev.txt
   - git clone https://github.com/cloudmesh/cloudmesh-common.git
   - git clone https://github.com/cloudmesh/cloudmesh-cmd5.git
   - git clone https://github.com/cloudmesh/cloudmesh-cloud.git
@@ -28,7 +26,9 @@ install:
   - pip install --user -r requirements.txt
   - pip install --user .
   - cd ..
-  - pip install .
+  - pip install --user -r requirements.txt
+  - pip install --user -r requirements-dev.txt
+  - pip install --user .
   - mkdir -p ~/.cloudmesh
   - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-common/master/cloudmesh/etc/cloudmesh.yaml
   - cms help
