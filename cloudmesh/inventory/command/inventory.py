@@ -1,12 +1,13 @@
 from __future__ import print_function
-from cloudmesh.shell.command import command, map_parameters
-from cloudmesh.shell.command import PluginCommand
-from cloudmesh.inventory.api.data import Inventory
+
 from cloudmesh.common.console import Console
-from cloudmesh.common.util import path_expand
-from pprint import pprint
 from cloudmesh.common.parameter import Parameter
-from cloudmeh.management.configuration.config import Config
+from cloudmesh.inventory.inventory import Inventory
+from cloudmesh.management.configuration.config import Config
+from cloudmesh.shell.command import PluginCommand
+from cloudmesh.shell.command import command, map_parameters
+from pprint import pprint
+
 class InventoryCommand(PluginCommand):
 
     # noinspection PyUnusedLocal
@@ -73,33 +74,33 @@ class InventoryCommand(PluginCommand):
 
           Examples:
 
-            cm inventory add x[0-3] --service=openstack
+            cms inventory add x[0-3] --service=openstack
 
                 adds hosts x0, x1, x2, x3 and puts the string
                 openstack into the service column
 
-            cm lists
+            cms inventory lists
 
                 lists the repository
 
-            cm x[3-4] set temperature to 32
+            cms inventory x[3-4] set temperature to 32
 
                 sets for the resources x3, x4 the value of the
                 temperature to 32
 
-            cm x[7-8] set ip 128.0.0.[0-1]
+            cms inventory x[7-8] set ip 128.0.0.[0-1]
 
                 sets the value of x7 to 128.0.0.0
                 sets the value of x8 to 128.0.0.1
 
-            cm clone x[5-6] from x3
+            cms inventory clone x[5-6] from x3
 
                 clones the values for x5, x6 from x3
 
         """
         map_parameters(arguments,
                        "columns")
-        print(arguments)
+
         #
         # TODO: fix config reader, suse cmd4
         #
@@ -112,19 +113,31 @@ class InventoryCommand(PluginCommand):
             i.read()
             i.info()
 
-        elif arguments.list:
 
+
+        elif arguments.NAMES is not None and arguments.list:
+
+            hosts = Parameter.expand(arguments.NAMES)
+
+            print (hosts)
             i = Inventory()
             i.read()
+            d = dict(i.data)
+            r = {}
+            for key in d:
+                if key in hosts:
+                    r[key] = d[key]
+
+            pprint(r)
+            i.data = r
+
             if arguments["--columns"]:
                 order = arguments["--columns"].split(",")
             else:
                 order = i.order
             print(i.list(format="table", order=order))
 
-        elif arguments.NAMES is None:
 
-            Console.error("Please specify a host name")
         # elif arguments["set"]:
         #    hosts = hostlist.expand_hostlist(arguments.NAMES)
         #    i = inventory()
@@ -142,6 +155,16 @@ class InventoryCommand(PluginCommand):
         #    element['host'] = arguments.NAMES
         #    i.add(**element)
         #    print (i.list(format="table"))
+
+        elif arguments.list:
+
+            i = Inventory()
+            i.read()
+            if arguments["--columns"]:
+                order = arguments["--columns"].split(",")
+            else:
+                order = i.order
+            print(i.list(format="table", order=order))
 
         elif arguments.set:
 

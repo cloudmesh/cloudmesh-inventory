@@ -1,0 +1,48 @@
+###############################################################
+# pip install .; npytest -v --capture=no  tests/test_inventory.py:Test_inventory  .test_001
+# pytest -v --capture=no  tests/test_inventory  .py
+# pytest -v tests/test_inventory  .py
+###############################################################
+
+from pprint import pprint
+
+from cloudmesh.common.Printer import Printer
+from cloudmesh.common.util import HEADING
+from cloudmesh.common.util import banner
+from cloudmesh.inventory.inventory import Inventory
+
+class Test_inventory:
+
+    def setup(self):
+        self.i = Inventory()
+        banner("Info")
+        self.i.info()
+
+    def test_001_inventory(self):
+        HEADING()
+
+        for output in ['dict', 'yaml', 'csv', 'table']:
+            banner(output)
+            print(self.i.list(format=output))
+
+        banner("changing values")
+        self.i.add(host="i1", cluster="india", label="india")
+        self.i.add(host="i2", cluster="india", label="gregor")
+        self.i.add(host="d[1-4]", cluster="delta", label="delta")
+
+        banner("saving")
+        self.i.save()
+
+        for output in ['dict', 'yaml', 'csv', 'table']:
+            banner(output)
+            print(self.i.list(format=output))
+
+        banner("reading")
+        n = Inventory()
+        n.read()
+
+        t = n.list('table')
+        print(t)
+
+        assert "|" in t
+        assert "gregor" in t

@@ -1,22 +1,22 @@
 from __future__ import print_function
-from future.utils import iteritems
-from cloudmesh.common.Shell import Shell
-from cloudmesh.common.ConfigDict import ConfigDict
-from cloudmesh.common.util import path_expand
-from cloudmesh.common.util import banner
-from cloudmesh.common.locations import config_file
-from cloudmesh.common.locations import config_dir_setup
-from cloudmesh.common.console import Console
-from cloudmesh.common.Printer import Printer
-from pprint import pprint
-import json
-import yaml
-import hostlist
-import sys
+
 import os.path
+import shutil
+import sys
+from pathlib import Path
+
+import cloudmesh.inventory.etc as etc
+import hostlist
+import yaml
+from cloudmesh.common.Printer import Printer
+from cloudmesh.common.Shell import Shell
+from cloudmesh.common.console import Console
+from cloudmesh.common.util import banner
+from cloudmesh.common.util import path_expand
 
 
 class Inventory(object):
+
     def info(self):
         self.filename = path_expand("~/.cloudmesh/inventory.yaml")
 
@@ -46,6 +46,10 @@ class Inventory(object):
         self.data = {}
 
         self.filename = path_expand("~/.cloudmesh/inventory.yaml")
+        if not os.path.exists(self.filename):
+            source = Path(os.path.dirname(etc.__file__) + "/inventory.yaml")
+            shutil.copyfile(source, self.filename)
+
         self.read(self.filename)
 
     def read(self, filename=None):
@@ -67,7 +71,7 @@ class Inventory(object):
     def add(self, **kwargs):
 
         if "host" not in kwargs:
-            print("ERROR no id specified")
+            Console.error("no id specified")
             sys.exit(1)
 
         hosts = hostlist.expand_hostlist(kwargs['host'])
@@ -118,30 +122,3 @@ class CommandSystem(object):
             return False
         else:
             return False
-
-
-if __name__ == "__main__":
-    i = Inventory()
-    banner("Info")
-    i.info()
-
-    for output in ['dict', 'yaml', 'csv', 'table']:
-        banner(output)
-        print(i.list(format=output))
-
-    banner("changing values")
-    i.add(host="i1", cluster="india", label="india")
-    i.add(host="i2", cluster="india", label="gregor")
-    i.add(host="d[1-4]", cluster="delta", label="delta")
-
-    banner("saving")
-    i.save()
-
-    for output in ['dict', 'yaml', 'csv', 'table']:
-        banner(output)
-        print(i.list(format=output))
-
-    banner("reading")
-    n = Inventory()
-    n.read()
-    print(n.list('table'))
