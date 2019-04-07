@@ -44,8 +44,8 @@ class Test_inventory:
         t = n.list('table')
         print(t)
 
-        assert "gregor" in t
-        assert "+" in t
+        assert "gregor" in str(t)
+        assert "+" in str(t)
 
 
 """
