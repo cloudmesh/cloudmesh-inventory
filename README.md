@@ -40,12 +40,11 @@ You will need the followng other cloudmesh modules before you can
 install via pip:
 
 ```bash
-$ pip insatll cloudmesh.inventory
+$ pip insatll cloudmesh-common
+$ pip insatll cloudmesh-cmd5
+$ pip insatll cloudmesh-inventory
 ```
 
-This will also install
-
-* cloudmesh-cmd5
 
 ### Instalation from source
 
@@ -55,19 +54,19 @@ To install it form source (which is the current method) use:
     mkdir ~/github
     cd ~/github
 
-    git clone https://github.com/cloudmesh.common.git
-    git clone https://github.com/cloudmesh.cmd5.git
-    git clone https://github.com/cloudmesh.inventory.git
+    git clone https://github.com/cloudmesh-common.git
+    git clone https://github.com/cloudmesh-cmd5.git
+    git clone https://github.com/cloudmesh-inventory.git
 
-    cd ~/github/common
+    cd ~/github/cloudmesh-common
     python setup.py install
     pip install -e .
 
-    cd ~/github/cmd5
+    cd ~/github/cloudmesh-cmd5
     python setup.py install
     pip install -e .
 
-    cd ~/github/cloudmesh.inventory
+    cd ~/github/cloudmesh-inventory
     python setup.py install
     pip install -e .
 
