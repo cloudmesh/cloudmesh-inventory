@@ -1,12 +1,23 @@
 # Cloudmesh Inventory
 
-
-[![image](https://img.shields.io/travis/TankerHQ/cloudmesh-inventory.svg?branch=master)](https://travis-ci.org/TankerHQ/cloudmesn-inventory)
-[![image](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory)
-[![image](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.org/project/cloudmesh-inventory/)
+[![Version](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
+[![Python](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
+[![Format](https://img.shields.io/pypi/format/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
+[![Format](https://img.shields.io/pypi/status/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
+[![Travis](https://travis-ci.com/cloudmesh/cloudmesh-inventory.svg?branch=master)](https://travis-ci.com/cloudmesh/cloudmesh-inventory)
 
 
+## Instalation and Documentation
+
+Please note that several packages are available which are pointed to in the
+instalation documentation.
+
+|  | Links |
+|---------------|-------|
+| Documentation | <https://cloudmesh.github.io/cloudmesh-cloud> |
+| Code | <https://github.com/cloudmesh/cloudmesh-cloud> |
+| Instalation Instructions | <https://github.com/cloudmesh/get> |
 Sometimes its necessary to maintain a simple inventory. Naturally if you
 know python you can do this with dicts. However to manage a large number
 of items with repeated values its is of advantage to do this from the
