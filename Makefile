@@ -117,9 +117,9 @@ patch: clean
 	# git push origin master --tags
 	twine check dist/*
 	twine upload --repository testpypi  dist/*
-	$(call banner, "install")
-	sleep 10
-	pip install --index-url https://test.pypi.org/simple/ cloudmesh-$(package) -U
+	# $(call banner, "install")
+	# sleep 10
+	# pip install --index-url https://test.pypi.org/simple/ cloudmesh-$(package) -U
 
 minor: clean
 	$(call banner, "minor")
@@ -136,9 +136,9 @@ release: clean
 	twine upload --repository pypi dist/*
 	$(call banner, "install")
 	@cat VERSION
-	@echo
-	sleep 10
-	pip install -U cloudmesh-common
+	# @echo
+	# sleep 10
+	# pip install -U cloudmesh-common
 
 
 dev:
