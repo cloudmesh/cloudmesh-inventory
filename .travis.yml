@@ -18,12 +18,15 @@ install:
   - git clone https://github.com/cloudmesh/cloudmesh-cmd5.git
   - git clone https://github.com/cloudmesh/cloudmesh-cloud.git
   - cd cloudmesh-common
+  - pip install --user -r requirements.txt
   - pip install --user .
   - cd ..
   - cd cloudmesh-cmd5
+  - pip install --user -r requirements.txt
   - pip install --user .
   - cd ..
   - cd cloudmesh-cloud
+  - pip install --user -r requirements.txt
   - pip install --user .
   - cd ..
   - mkdir ~/.cloudmesh
