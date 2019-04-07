@@ -10,7 +10,7 @@ python:
 #  - "nightly"  # nightly build
 
 install:
-  - python -mn pip install --user pip -U
+  - pip install --user pip -U
   - pwd
   - pip install --user -r requirements.txt
   - pip install --user -r requirements-dev.txt
