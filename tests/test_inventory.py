@@ -10,7 +10,9 @@ from cloudmesh.common.Printer import Printer
 from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
 from cloudmesh.inventory.inventory import Inventory
+import pytest
 
+@pytest.mark.incremental
 class Test_inventory:
 
     def setup(self):
