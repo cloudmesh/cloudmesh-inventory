@@ -1,5 +1,4 @@
-nose
 pytest
 coverage
 flake8
-pytext-cov
+pytest-cov
