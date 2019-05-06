@@ -1,1 +1,3 @@
 pytimeparse
+cloudmesh-common
+cloudmesh-cmd5
