@@ -31,7 +31,7 @@ a table format.
 
 Make sure you have a new version of python and pip. We tested with
 
-* python 3.7.2
+* python 3.7.3
 * pip 19.0.3
 
 ### Instalation with pip
