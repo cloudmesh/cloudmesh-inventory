@@ -20,7 +20,7 @@ class Test_inventory:
         banner("Info")
         self.i.info()
 
-    def test_001_inventory(self):
+    def test_inventory(self):
         HEADING()
 
         for output in ['dict', 'yaml', 'csv', 'table']:
