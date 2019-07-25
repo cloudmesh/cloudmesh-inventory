@@ -69,7 +69,7 @@ class InventoryCommand(PluginCommand):
                          are used the values are assigned to the and
                          objects in order. See examples
 
-                map   -- allows to set attibutes on a set of objects
+                map   -- allows to set attributes on a set of objects
                          with a set of values
 
           Examples:
@@ -102,7 +102,7 @@ class InventoryCommand(PluginCommand):
                        "columns")
 
         #
-        # TODO: fix config reader, suse cmd4
+        # TODO: fix config reader, use cmd4
         #
         filename = Config(config_path="/cloudmesh_inventory.yaml")
 
