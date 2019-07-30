@@ -1,4 +1,4 @@
-dist: xenial
+dist: bionic
 
 sudo: required
 
@@ -11,23 +11,7 @@ python:
 
 install:
   - pwd
-  - git clone https://github.com/cloudmesh/cloudmesh-common.git
-  - git clone https://github.com/cloudmesh/cloudmesh-cmd5.git
-  - git clone https://github.com/cloudmesh/cloudmesh-cloud.git
-  - cd cloudmesh-common
   - pip install -r requirements.txt
-  - pip install .
-  - cd ..
-  - cd cloudmesh-cmd5
-  - pip install -r requirements.txt
-  - pip install .
-  - cd ..
-  - cd cloudmesh-cloud
-  - pip install -r requirements.txt
-  - pip install .
-  - cd ..
-  - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
   - pip install .
   - mkdir -p ~/.cloudmesh
   - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-config/master/cloudmesh/configuration/etc/cloudmesh.yaml
