@@ -1,5 +1,5 @@
 cloudmesh-common
-cloudmesh-config
+cloudmesh-configuration
 cloudmesh-cmd5
 cloudmesh-sys
 #
