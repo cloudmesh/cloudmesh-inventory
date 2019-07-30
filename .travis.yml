@@ -30,8 +30,7 @@ install:
   - pip install -r requirements-dev.txt
   - pip install .
   - mkdir -p ~/.cloudmesh
-  - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-common/master/cloudmesh/etc/cloudmesh.yaml
-  - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-cloud/master/cloudmesh/etc/cloudmesh4.yaml
+  - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-config/master/cloudmesh/configuration/etc/cloudmesh.yaml
   - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-inventory/master/cloudmesh/inventory/etc/inventory.yaml
   - cms help
   - cms help inventory
