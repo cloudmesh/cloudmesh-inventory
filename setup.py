@@ -30,7 +30,7 @@ def readfile(filename):
 requiers = """
 pytimeparse
 cloudmesh-common
-cloudmesh-config
+cloudmesh-configuration
 cloudmesh-cmd5
 cloudmesh-sys
 """.split("\n")
