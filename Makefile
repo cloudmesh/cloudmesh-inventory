@@ -40,7 +40,7 @@ setup:
 
 requirements:
 	echo "cloudmesh-common" > tmp.txt
-	echo "cloudmesh-config" >> tmp.txt
+	echo "cloudmesh-configuration" >> tmp.txt
 	echo "cloudmesh-cmd5" >> tmp.txt
 	echo "cloudmesh-sys" >> tmp.txt
 	pip-compile setup.py
