@@ -24,7 +24,7 @@ class InventoryCommand(PluginCommand):
                                   [--comment=COMMENT]
                                   [--cluster=CLUSTER]
                                   [--ip=IP]
-              inventory set NAMES for ATTRIBUTE to VALUES
+              inventory set NAMES ATTRIBUTE to VALUES
               inventory delete NAMES
               inventory clone NAMES from SOURCE
               inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS]
