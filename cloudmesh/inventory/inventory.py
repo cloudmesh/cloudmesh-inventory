@@ -102,7 +102,7 @@ class Inventory(object):
     def _str(self, data, with_empty=False):
         print()
         for key in data:
-            if self.data[key] is '' or self.data[key] is None:
+            if self.data[key] == '' or self.data[key] is None:
                 pass
             else:
                 print(self.data[key])
