@@ -51,24 +51,15 @@ $ pip insatll cloudmesh-inventory
 To install it form source (which is the current method) use:
 
 
-    mkdir ~/github
-    cd ~/github
-
-    git clone https://github.com/cloudmesh-common.git
-    git clone https://github.com/cloudmesh-cmd5.git
-    git clone https://github.com/cloudmesh-inventory.git
-
-    cd ~/github/cloudmesh-common
-    python setup.py install
-    pip install -e .
-
-    cd ~/github/cloudmesh-cmd5
-    python setup.py install
-    pip install -e .
-
-    cd ~/github/cloudmesh-inventory
-    python setup.py install
-    pip install -e .
+    $ mkdir ~/cm
+    $ cd ~/cm
+    
+    $ pip install cloudmesh-installer    
+    $ cloudmesh-installer git clone inventory
+    $ cloudmesh-installer install inventory
+    
+This will clone a number of repositories in the `cm` directory and
+install them with   `pip` from them.
 
 Configuration
 -------------
@@ -108,9 +99,7 @@ An example file will look as follows:
 BUGS
 ----
 
-This command has not be extensively tested and we are sure we have not
-yet implemented everything. Please help improving it by forking and
-contributing via pull requests.
+If you like to see fetures added or find bugs, please let us know.
 
 Manpage
 -------
