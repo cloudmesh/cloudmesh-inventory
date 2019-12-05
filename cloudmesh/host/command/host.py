@@ -7,6 +7,7 @@ from pprint import pprint
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.host.host import Host
+from cloudmesh.common.util import readfile, writefile
 
 class HostCommand(PluginCommand):
 
@@ -17,11 +18,11 @@ class HostCommand(PluginCommand):
         ::
 
           Usage:
-              host scp NAMES SOURCE DESTINATION
-              host ssh NAMES COMMAND
-              host key cat NAMES
-              host key fix FILE
-              host key cp NAMES FILE
+              host scp NAMES SOURCE DESTINATION [--dryrun]
+              host ssh NAMES COMMAND [--dryrun]
+              host key list NAMES [--dryrun]
+              host key fix FILE [--dryrun]
+              host key scp NAMES FILE [--dryrun]
 
 
           This command does some useful things.
@@ -30,7 +31,7 @@ class HostCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              -f      specify the file
+              --dryrun   shows what would be done but does not execute
 
           Description:
 
@@ -43,7 +44,7 @@ class HostCommand(PluginCommand):
                 Example:
                      ssh red[01-10] \"uname -a\"
 
-              host key cat NAMES
+              host key list NAMES
 
                 cats all id_rsa.pub keys from all hosts specifed
                  Example:
@@ -52,6 +53,7 @@ class HostCommand(PluginCommand):
               host key fix FILE
 
                 not implemented yet
+
                 copies all keys the file FILE to authorized_keys on all hosts
                 but also makes sure the the users ~/.ssh/id_rsa.pub key is in
                 the file.
@@ -59,19 +61,21 @@ class HostCommand(PluginCommand):
                 1) adds ~/.id_ras.pub to the FILE only if its not already in it
                 2) removes all duplicated keys
 
-              host key cp NAMES
+              host key scp NAMES FILE
 
                 not implemented yet
+
                 copies all keys the file FILE to authorized_keys on all hosts
                 but also makes sure the the users ~/.ssh/id_rsa.pub key is in
-                the file.
-
+                the file, e.g. it calls fix before upload
 
         """
+        dryrun = arguments["--dryrun"]
 
-        VERBOSE(arguments)
+        if dryrun:
+            VERBOSE(arguments)
 
-        if arguments.scp:
+        if arguments.scp and not arguments.key:
 
             destinations = Parameter.expand(arguments.DESTINATION)
             source = arguments.SOURCE
@@ -82,25 +86,51 @@ class HostCommand(PluginCommand):
             results = Host.ssh(names, arguments.COMMAND)
             pprint (results)
 
-        elif arguments.key and arguments.cat:
+        elif arguments.key and arguments.list:
 
             names = Parameter.expand(arguments.NAMES)
 
             command = "cat ~/.ssh/id_rsa.pub"
 
-            results = Host.ssh(names, command)
-            pprint(results)
+            results = Host.ssh(names, command, dryrun=dryrun)
+            # pprint(results)
 
             result = Host.concatenate_keys(results)
 
-            print(result)
+            if not dryrun:
+                print(result)
 
-        elif arguments.key and arguments.add:
-            raise NotImplementedError
+        elif arguments.key and arguments.fix:
 
-        elif arguments.key and arguments.list:
+            #
+            # concatenate ~/.ssh/id_rsa.pub
+            #
+            lines = readfile(arguments.FILE)
+            key = readfile(path_expand("~/.ssh/id_rsa.pub"))
 
-            raise NotImplementedError
+            authorized_keys = lines + key
 
+            #
+            # remove duplicated lines
+            #
+
+            keys = ''.join(authorized_keys)
+            keys = '\n'.join(list(set(keys.splitlines())))
+
+
+            writefile(arguments.FILE, str(keys))
+
+
+        elif arguments.key and arguments.scp:
+
+            source = path_expand("~/.ssh/authorized_keys")
+
+            names = Parameter.expand(arguments.NAMES)
+
+            for name in names:
+                destinations = [f"{name}:~/.ssh/authorized_keys"]
+                results = Host.scp(source, destinations, dryrun=dryrun)
+
+        print()
 
         return ""
