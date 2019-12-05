@@ -4,7 +4,7 @@ from pprint import pprint
 class Host (object):
 
     @staticmethod
-    def ssh(names, command, output="lines"):
+    def ssh(names, command, output="lines", dryrun=False):
         """
 
         :param names:
@@ -25,18 +25,19 @@ class Host (object):
 
             print(f"ssh {name} {_command}")
 
-            result = Shell.run(_command)
+            if not dryrun:
+                result = Shell.run(_command)
 
-            if output == "lines":
-                lines = result.split("\n")
-                results.append((name, lines))
-            elif output == "string":
-                results.append((name, result))
+                if output == "lines":
+                    lines = result.split("\n")
+                    results.append((name, lines))
+                elif output == "string":
+                    results.append((name, result))
 
         return results
 
     @staticmethod
-    def scp(source, destinations, output="lines"):
+    def scp(source, destinations, output="lines", dryrun=False):
         """
 
         :param names:
@@ -52,13 +53,14 @@ class Host (object):
 
             print (command)
 
-            result = Shell.run(command)
+            if not dryrun:
+                result = Shell.run(command)
 
-            if output == "lines":
-                lines = result.split("\n")
-                results.append((destination, lines))
-            elif output == "string":
-                results.append((destination, result))
+                if output == "lines":
+                    lines = result.split("\n")
+                    results.append((destination, lines))
+                elif output == "string":
+                    results.append((destination, result))
 
         return results
 
