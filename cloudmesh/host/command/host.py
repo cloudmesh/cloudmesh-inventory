@@ -1,7 +1,6 @@
 from __future__ import print_function
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import PluginCommand
-from cloudmesh.host.api.manager import Manager
 from cloudmesh.common.console import Console
 from cloudmesh.common.util import path_expand
 from pprint import pprint
@@ -21,9 +20,8 @@ class HostCommand(PluginCommand):
               host scp NAMES SOURCE DESTINATION
               host ssh NAMES COMMAND
               host key cat NAMES
-              host key add NAMES
-              host key list NAMES
-              host key distribute NAMES
+              host key fix FILE
+              host key cp NAMES FILE
 
 
           This command does some useful things.
@@ -33,6 +31,41 @@ class HostCommand(PluginCommand):
 
           Options:
               -f      specify the file
+
+          Description:
+
+              host scp NAMES SOURCE DESTINATION
+
+
+              host ssh NAMES COMMAND
+
+                runs the command on all specified hosts
+                Example:
+                     ssh red[01-10] \"uname -a\"
+
+              host key cat NAMES
+
+                cats all id_rsa.pub keys from all hosts specifed
+                 Example:
+                     ssh key red[01-10] cat
+
+              host key fix FILE
+
+                not implemented yet
+                copies all keys the file FILE to authorized_keys on all hosts
+                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
+                the file.
+
+                1) adds ~/.id_ras.pub to the FILE only if its not already in it
+                2) removes all duplicated keys
+
+              host key cp NAMES
+
+                not implemented yet
+                copies all keys the file FILE to authorized_keys on all hosts
+                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
+                the file.
+
 
         """
 
