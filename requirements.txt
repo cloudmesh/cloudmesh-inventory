@@ -11,3 +11,4 @@ cloudmesh-sys
 pytimeparse==1.1.8
 
 # The following packages are considered to be unsafe in a requirements file:
+# setuptools
