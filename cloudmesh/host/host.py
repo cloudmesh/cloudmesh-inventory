@@ -1,4 +1,4 @@
-from cloudmesh.common3.Shell import Shell
+from cloudmesh.common.Shell import Shell
 from pprint import pprint
 
 class Host (object):
