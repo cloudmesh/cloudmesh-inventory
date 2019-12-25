@@ -23,7 +23,7 @@ class Host (object):
         for name in names:
             _command = command.format(name=name)
 
-            print(f"ssh {name} {_command}")
+            _command = f"ssh {name} {_command}"
 
             if not dryrun:
                 result = Shell.run(_command)
