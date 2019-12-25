@@ -71,8 +71,6 @@ class HostCommand(PluginCommand):
 
               host key scp NAMES FILE
 
-                not implemented yet
-
                 copies all keys from file FILE to authorized_keys on all hosts
                 but also makes sure that the users ~/.ssh/id_rsa.pub key is in
                 the file and removes duplicates, e.g. it calls fix before upload
@@ -115,38 +113,19 @@ class HostCommand(PluginCommand):
             result = Host.concatenate_keys(results)
 
             if not dryrun:
-                print(result)
+                print(result, end='')
 
         elif arguments.key and arguments.fix:
-
-            #
-            # concatenate ~/.ssh/id_rsa.pub
-            #
-            lines = readfile(arguments.FILE)
-            key = readfile(path_expand("~/.ssh/id_rsa.pub"))
-
-            authorized_keys = lines + key
-
-            #
-            # remove duplicated lines
-            #
-
-            keys = ''.join(authorized_keys)
-            keys = '\n'.join(list(set(keys.splitlines())))
-
-
-            writefile(arguments.FILE, str(keys))
-
+            Host.fix_keys_file(arguments.FILE)
 
         elif arguments.key and arguments.scp:
 
-            source = path_expand("~/.ssh/authorized_keys")
-
+            Host.fix_keys_file(arguments.FILE)
             names = Parameter.expand(arguments.NAMES)
 
             for name in names:
                 destinations = [f"{name}:~/.ssh/authorized_keys"]
-                results = Host.scp(source, destinations, dryrun=dryrun)
+                results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
 
         print()
 
