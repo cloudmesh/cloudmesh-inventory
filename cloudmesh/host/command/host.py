@@ -20,6 +20,7 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun]
+              host key create NAMES [--dryrun]
               host key list NAMES [--dryrun]
               host key fix FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
@@ -43,6 +44,11 @@ class HostCommand(PluginCommand):
                 runs the command on all specified hosts
                 Example:
                      ssh red[01-10] \"uname -a\"
+
+              host key create NAMES
+                create a ~/.ssh/id_rsa and id_rsa.pub on all hosts specified
+                Example:
+                    ssh key create red[01-10]
 
               host key list NAMES
 
@@ -85,6 +91,11 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
             results = Host.ssh(names, arguments.COMMAND)
             pprint (results)
+
+        elif arguments.key and arguments.create:
+            names = Parameter.expand(arguments.NAMES)
+            command = "'ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa'"
+            results = Host.ssh(names, command, dryrun=dryrun)
 
         elif arguments.key and arguments.list:
 
