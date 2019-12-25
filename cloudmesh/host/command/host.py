@@ -58,22 +58,28 @@ class HostCommand(PluginCommand):
 
               host key fix FILE
 
-                not implemented yet
-
-                copies all keys the file FILE to authorized_keys on all hosts
-                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
+                copies all keys from file FILE to authorized_keys on all hosts,
+                but also makes sure that the users ~/.ssh/id_rsa.pub key is in
                 the file.
 
-                1) adds ~/.id_ras.pub to the FILE only if its not already in it
+                1) adds ~/.id_rsa.pub to the FILE only if its not already in it
                 2) removes all duplicated keys
+
+                Example:
+                    ssh key list red[01-10] > pubkeys.txt
+                    ssh key fix pubkeys.txt
 
               host key scp NAMES FILE
 
                 not implemented yet
 
-                copies all keys the file FILE to authorized_keys on all hosts
-                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
-                the file, e.g. it calls fix before upload
+                copies all keys from file FILE to authorized_keys on all hosts
+                but also makes sure that the users ~/.ssh/id_rsa.pub key is in
+                the file and removes duplicates, e.g. it calls fix before upload
+
+                Example:
+                    ssh key list red[01-10] > pubkeys.txt
+                    ssh key scp red[01-10] pubkeys.txt
 
         """
         dryrun = arguments["--dryrun"]
