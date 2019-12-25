@@ -24,8 +24,9 @@ class Host (object):
             _command = command.format(name=name)
 
             _command = f"ssh {name} {_command}"
-
-            if not dryrun:
+            if dryrun:
+                print(_command)
+            else:
                 result = Shell.run(_command)
 
                 if output == "lines":
