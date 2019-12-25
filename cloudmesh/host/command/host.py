@@ -48,7 +48,7 @@ class HostCommand(PluginCommand):
 
                 cats all id_rsa.pub keys from all hosts specifed
                  Example:
-                     ssh key red[01-10] cat
+                     ssh key list red[01-10]
 
               host key fix FILE
 
@@ -90,7 +90,7 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
 
-            command = "cat ~/.ssh/id_rsa.pub"
+            command = "'cat ~/.ssh/id_rsa.pub'"
 
             results = Host.ssh(names, command, dryrun=dryrun)
             # pprint(results)
