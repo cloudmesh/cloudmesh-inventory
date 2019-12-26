@@ -1,10 +1,11 @@
 from cloudmesh.common.Shell import Shell
-from cloudmesh.common.util import readfile, writefile
 from cloudmesh.common.util import path_expand
-from pprint import pprint
+from cloudmesh.common.util import readfile, writefile
 
-class Host (object):
 
+class Host(object):
+
+    # noinspection PyPep8
     @staticmethod
     def ssh(names, command, output="lines", dryrun=False):
         """
@@ -54,7 +55,7 @@ class Host (object):
             command = (f"scp  {source} {destination}")
             # result = command.format(name=name)
 
-            print (command)
+            print(command)
 
             if not dryrun:
                 result = Shell.run(command)

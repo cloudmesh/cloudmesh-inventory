@@ -1,12 +1,14 @@
 from __future__ import print_function
 
+from pprint import pprint
+
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
-from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.configuration.Config import Config
+from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
-from pprint import pprint
+
 
 class InventoryCommand(PluginCommand):
 
@@ -113,13 +115,11 @@ class InventoryCommand(PluginCommand):
             i.read()
             i.info()
 
-
-
         elif arguments.NAMES is not None and arguments.list:
 
             hosts = Parameter.expand(arguments.NAMES)
 
-            print (hosts)
+            print(hosts)
             i = Inventory()
             i.read()
             d = dict(i.data)
@@ -136,7 +136,6 @@ class InventoryCommand(PluginCommand):
             else:
                 order = i.order
             print(i.list(format="table", order=order))
-
 
         # elif arguments["set"]:
         #    hosts = hostlist.expand_hostlist(arguments.NAMES)

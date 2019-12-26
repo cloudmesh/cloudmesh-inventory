@@ -1,13 +1,13 @@
 from __future__ import print_function
-from cloudmesh.shell.command import command
-from cloudmesh.shell.command import PluginCommand
-from cloudmesh.common.console import Console
-from cloudmesh.common.util import path_expand
+
 from pprint import pprint
+
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.host.host import Host
-from cloudmesh.common.util import readfile, writefile
+from cloudmesh.shell.command import PluginCommand
+from cloudmesh.shell.command import command
+
 
 class HostCommand(PluginCommand):
 
@@ -94,7 +94,7 @@ class HostCommand(PluginCommand):
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
             results = Host.ssh(names, arguments.COMMAND)
-            pprint (results)
+            pprint(results)
 
         elif arguments.key and arguments.create:
             names = Parameter.expand(arguments.NAMES)
