@@ -20,6 +20,7 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun]
+              host key create NAMES [--dryrun]
               host key list NAMES [--dryrun]
               host key fix FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
@@ -44,30 +45,39 @@ class HostCommand(PluginCommand):
                 Example:
                      ssh red[01-10] \"uname -a\"
 
+              host key create NAMES
+                create a ~/.ssh/id_rsa and id_rsa.pub on all hosts specified
+                Example:
+                    ssh key create red[01-10]
+
               host key list NAMES
 
                 cats all id_rsa.pub keys from all hosts specifed
                  Example:
-                     ssh key red[01-10] cat
+                     ssh key list red[01-10]
 
               host key fix FILE
 
-                not implemented yet
-
-                copies all keys the file FILE to authorized_keys on all hosts
-                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
+                copies all keys from file FILE to authorized_keys on all hosts,
+                but also makes sure that the users ~/.ssh/id_rsa.pub key is in
                 the file.
 
-                1) adds ~/.id_ras.pub to the FILE only if its not already in it
+                1) adds ~/.id_rsa.pub to the FILE only if its not already in it
                 2) removes all duplicated keys
+
+                Example:
+                    ssh key list red[01-10] > pubkeys.txt
+                    ssh key fix pubkeys.txt
 
               host key scp NAMES FILE
 
-                not implemented yet
+                copies all keys from file FILE to authorized_keys on all hosts
+                but also makes sure that the users ~/.ssh/id_rsa.pub key is in
+                the file and removes duplicates, e.g. it calls fix before upload
 
-                copies all keys the file FILE to authorized_keys on all hosts
-                but also makes sure the the users ~/.ssh/id_rsa.pub key is in
-                the file, e.g. it calls fix before upload
+                Example:
+                    ssh key list red[01-10] > pubkeys.txt
+                    ssh key scp red[01-10] pubkeys.txt
 
         """
         dryrun = arguments["--dryrun"]
@@ -86,11 +96,16 @@ class HostCommand(PluginCommand):
             results = Host.ssh(names, arguments.COMMAND)
             pprint (results)
 
+        elif arguments.key and arguments.create:
+            names = Parameter.expand(arguments.NAMES)
+            command = "'ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa'"
+            results = Host.ssh(names, command, dryrun=dryrun)
+
         elif arguments.key and arguments.list:
 
             names = Parameter.expand(arguments.NAMES)
 
-            command = "cat ~/.ssh/id_rsa.pub"
+            command = "'cat ~/.ssh/id_rsa.pub'"
 
             results = Host.ssh(names, command, dryrun=dryrun)
             # pprint(results)
@@ -98,38 +113,19 @@ class HostCommand(PluginCommand):
             result = Host.concatenate_keys(results)
 
             if not dryrun:
-                print(result)
+                print(result, end='')
 
         elif arguments.key and arguments.fix:
-
-            #
-            # concatenate ~/.ssh/id_rsa.pub
-            #
-            lines = readfile(arguments.FILE)
-            key = readfile(path_expand("~/.ssh/id_rsa.pub"))
-
-            authorized_keys = lines + key
-
-            #
-            # remove duplicated lines
-            #
-
-            keys = ''.join(authorized_keys)
-            keys = '\n'.join(list(set(keys.splitlines())))
-
-
-            writefile(arguments.FILE, str(keys))
-
+            Host.fix_keys_file(arguments.FILE)
 
         elif arguments.key and arguments.scp:
 
-            source = path_expand("~/.ssh/authorized_keys")
-
+            Host.fix_keys_file(arguments.FILE)
             names = Parameter.expand(arguments.NAMES)
 
             for name in names:
                 destinations = [f"{name}:~/.ssh/authorized_keys"]
-                results = Host.scp(source, destinations, dryrun=dryrun)
+                results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
 
         print()
 

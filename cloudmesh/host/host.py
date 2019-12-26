@@ -1,4 +1,6 @@
 from cloudmesh.common.Shell import Shell
+from cloudmesh.common.util import readfile, writefile
+from cloudmesh.common.util import path_expand
 from pprint import pprint
 
 class Host (object):
@@ -23,9 +25,10 @@ class Host (object):
         for name in names:
             _command = command.format(name=name)
 
-            print(f"ssh {name} {_command}")
-
-            if not dryrun:
+            _command = f"ssh {name} {_command}"
+            if dryrun:
+                print(_command)
+            else:
                 result = Shell.run(_command)
 
                 if output == "lines":
@@ -69,7 +72,22 @@ class Host (object):
         result = ""
         for entry in results:
             name, key = entry
-            key = ' '.join(key)
-            result = result + str(key) + "\n"
+            key = ''.join(key)
+            result += str(key) + '\n'
         result = result.strip()
         return result
+
+    @staticmethod
+    def fix_keys_file(filename):
+        # concatenate ~/.ssh/id_rsa.pub
+        lines = readfile(filename)
+        key = readfile(path_expand("~/.ssh/id_rsa.pub"))
+
+        authorized_keys = lines + key
+        keys = ''.join(authorized_keys)
+
+        # remove duplicates and empty lines
+        keys_list = [x for x in list(set(keys.splitlines())) if x != '\n']
+        keys = ('\n'.join(keys_list) + '\n')
+
+        writefile(filename, str(keys))
