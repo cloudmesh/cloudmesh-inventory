@@ -1,5 +1,5 @@
 ###############################################################
-# pip install .; npytest -v --capture=no  tests/test_inventory.py:Test_inventory  .test_001
+# pytest -v --capture=no  tests/test_inventory.py:Test_inventory  .test_001
 # pytest -v --capture=no  tests/test_inventory  .py
 # pytest -v tests/test_inventory  .py
 ###############################################################
@@ -11,6 +11,7 @@ from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
 from cloudmesh.inventory.inventory import Inventory
 import pytest
+
 
 @pytest.mark.incremental
 class Test_inventory:
