@@ -34,7 +34,7 @@ cloudmesh-common
 cloudmesh-configuration
 cloudmesh-cmd5
 cloudmesh-sys
-""".split("\n")
+""".splitlines()
 
 # dependency_links = ['http://github.com/nicolaiarocci/eve.git@develop']
 

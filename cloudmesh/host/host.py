@@ -33,7 +33,7 @@ class Host(object):
                 result = Shell.run(_command)
 
                 if output == "lines":
-                    lines = result.split("\n")
+                    lines = result.splitlines()
                     results.append((name, lines))
                 elif output == "string":
                     results.append((name, result))
@@ -61,7 +61,7 @@ class Host(object):
                 result = Shell.run(command)
 
                 if output == "lines":
-                    lines = result.split("\n")
+                    lines = result.splitlines()
                     results.append((destination, lines))
                 elif output == "string":
                     results.append((destination, result))
