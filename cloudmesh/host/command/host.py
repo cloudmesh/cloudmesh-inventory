@@ -7,7 +7,7 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
-
+from cloudmesh.common.util import path_expand
 
 class HostCommand(PluginCommand):
 
@@ -24,7 +24,9 @@ class HostCommand(PluginCommand):
               host key list NAMES [--dryrun]
               host key fix FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
-
+              host key gather NAMES [FILE]
+              host key scatter NAMES [FILE]
+              host key generate NAMES
 
           This command does some useful things.
 
@@ -126,6 +128,21 @@ class HostCommand(PluginCommand):
             for name in names:
                 destinations = [f"{name}:~/.ssh/authorized_keys"]
                 results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
+
+        elif arguments.key and arguments.gather:
+
+            names = Parameter.expand(arguments.NAMES)
+            file = arguments.get("FILE") or path_expand("~/.cloudmesh/keys/authorized_keys")
+
+            Host.gather(names,
+                        "~/.ssh/id_rsa.pub",
+                        file)
+
+        elif arguments.key and arguments.gather:
+
+            names = Parameter.expand(arguments.NAMES)
+            file = arguments.get("FILE") or path_expand("~/.cloudmesh/keys/authorized_keys")
+            Host.scatter(names, file, "~/.ssh/authorized_keys")
 
         print()
 
