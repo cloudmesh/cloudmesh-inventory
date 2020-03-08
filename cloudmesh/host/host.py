@@ -1,15 +1,17 @@
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile, writefile
-
+import os
+from glob import glob
 
 class Host(object):
 
     # noinspection PyPep8
     @staticmethod
-    def ssh(names, command, output="lines", dryrun=False):
+    def ssh(user, names, command, output="lines", dryrun=False):
         """
 
+        :param user: the username
         :param names:
         :param command:
         :param output:
@@ -26,7 +28,7 @@ class Host(object):
         for name in names:
             _command = command.format(name=name)
 
-            _command = f"ssh {name} {_command}"
+            _command = f"ssh {user}@{name} {_command}"
             if dryrun:
                 print(_command)
             else:
@@ -41,73 +43,65 @@ class Host(object):
         return results
 
     @staticmethod
-    def gather(names, file, desitnation, dryrun=False):
+    def gather(user,
+               names,
+               source,
+               destination="~/.ssh/authorized_keys",
+               dryrun=False,
+               append=False,
+               tmp=None):
 
-        sources = []
-        for name in names:
-            sources.append("{name}:{file}")
-
-        # mkddir -p destinat dir
-        # create desination s we can append
-
-        for source in sources:
-            print (f"{source}/{file}")
-            # content = Host.get(source, file)
-            # destination="~/.ssh/authorized_keys")
-
-        raise NotImplementedError
-
-    @staticmethod
-    def scatter(names, source, destinaton="~/.ssh/authorized_keys", dryrun=False):
+        tmp_dir = tmp or path_expand("~/.cloudmesh/tmp")
+        Shell.mkdir(tmp_dir)
 
         destinations = []
         for name in names:
             destinations.append("{name}:{file}")
 
-        # mkddir -p destinat dir
-        # create desination s we can append
+        directory = os.path.dirname(destination)
+        Shell.mkdir(directory)
 
-        for destination in destinations:
-            print (f"{source}/{destination}")
-            # content = Host.get(source, file)
-            # destination="~/.ssh/authorized_keys")
+        if not append:
+            Shell.rm(path_expand(destination))
+            writefile(destination, "")
 
+        for name in names:
+            source = f"{user}@{name}:{destination}"
+            print(f"{source} -> {tmp_dir}/{destination}")
+            result = Host.scp(source, f"{tmp_dir}/{destination}-{name}", dryrun)
 
-        #Host.scp_new(file, destination="~/.ssh/authorized_keys")
+        with open(path_expand(destination), 'a') as file:
+            for filename in glob(tmp_dir):
+                content = readfile(filename)
+                file.write(content)
 
-        raise NotImplementedError
-
-
-
-    @staticmethod
-    def put(source, destination, output="lines", dryrun=False):
-        """
-
-        :param names:
-        :param command:
-        :param output:
-        :return:
-        """
-        raise NotImplementedError
 
     @staticmethod
-    def get(source, destination, output="lines", dryrun=False):
-        """
+    def scatter(user,
+                names,
+                source,
+                destinaton="~/.ssh/authorized_keys",
+                dryrun=False):
 
-        :param names:
-        :param command:
-        :param output:
-        :return:
-        """
-        raise NotImplementedError
+        for name in names:
+            directory = os.path.dirname(destination)
+            Host.ssh(f"{user}@{name}", f"mkdir -p directory", dryrun)
+
+            destination = f"{user}@{name}:{destination}"
+            print (f"{source} -> {destination}")
+            Host.scp(source, destination, dryrun)
 
     @staticmethod
-    def generate_key(names, output="lines", dryrun=False):
+    def generate_key(user,
+                     names,
+                     output="lines",
+                     dryrun=False):
 
-        raise NotImplementedError
+        for name in names:
+            Host.ssh(f"{user}@{name}", f'cat /dev/zero | ssh-keygen -t rsa -b 4096 -q -P ""', dryrun)
 
-        Host.ssh(names)
 
+    # cat ~/.ssh/id_rsa.pub | ssh {user}@{ip} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 
     @staticmethod
     def scp(source, destinations, output="lines", dryrun=False):
