@@ -1,7 +1,7 @@
 ###############################################################
-# pytest -v --capture=no  tests/test_inventory..py::Test_inventory  .test_001
-# pytest -v --capture=no  tests/test_inventory  .py
-# pytest -v tests/test_inventory  .py
+# pytest -v --capture=no  tests/test_inventory.py::Test_inventory.test_001
+# pytest -v --capture=no  tests/test_inventory.py
+# pytest -v tests/test_inventory.py
 ###############################################################
 
 from pprint import pprint

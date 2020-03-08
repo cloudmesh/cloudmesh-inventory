@@ -9,7 +9,12 @@ class Host(object):
 
     # noinspection PyPep8
     @staticmethod
-    def ssh(user, names, command, output="lines", dryrun=False):
+    def ssh(names,
+            command,
+            user=None,
+            output="lines",
+            dryrun=False,
+            verbose=True):
         """
         Executes the command on the hosts specified by the hosts given in the names list
 
@@ -27,20 +32,24 @@ class Host(object):
 
 
         """
-        if type(names) != list:
-            names = Parameter(names)
+        if type(names) == str:
+            _names = Parameter.expand(names)
 
         results = []
 
-        for name in names:
+        for name in _names:
             _command = command.format(name=name)
 
-            _command = f"ssh {user}@{name} {_command}"
-            if dryrun:
+            if user is None:
+                _command = f"ssh {name} {_command}"
+            else:
+                _command = f"ssh {user}@{name} {_command}"
+            if dryrun or verbose:
                 print(_command)
             else:
                 result = Shell.run(_command)
-
+                if verbose:
+                    print(f"result={result}")
                 if output == "lines":
                     lines = result.splitlines()
                     results.append((name, lines))
@@ -59,13 +68,13 @@ class Host(object):
                tmp=None):
 
         if type(names) != list:
-            names = Parameter(names)
+            _names = Parameter.expand(names)
 
         tmp_dir = tmp or path_expand("~/.cloudmesh/tmp")
         Shell.mkdir(tmp_dir)
 
         destinations = []
-        for name in names:
+        for name in _names:
             destinations.append("{name}:{file}")
 
         directory = os.path.dirname(destination)
@@ -75,7 +84,7 @@ class Host(object):
             Shell.rm(path_expand(destination))
             writefile(destination, "")
 
-        for name in names:
+        for name in _names:
             source = f"{user}@{name}:{destination}"
             print(f"{source} -> {tmp_dir}/{destination}")
             result = Host.scp(source, f"{tmp_dir}/{destination}-{name}", dryrun)
@@ -94,9 +103,9 @@ class Host(object):
                 dryrun=False):
 
         if type(names) != list:
-            names = Parameter(names)
+            _names = Parameter.expand(names)
 
-        for name in names:
+        for name in _names:
             directory = os.path.dirname(destination)
             Host.ssh(f"{user}@{name}", f"mkdir -p directory", dryrun)
 
@@ -105,13 +114,23 @@ class Host(object):
             Host.scp(source, destination, dryrun)
 
     @staticmethod
-    def generate_key(user,
-                     names,
+    def generate_key(names,
+                     filename="~/.ssh/id_rsa",
+                     user=None,
                      output="lines",
-                     dryrun=False):
+                     dryrun=False,
+                     verbose=True):
 
-        for name in names:
-            Host.ssh(f"{user}@{name}", f'cat /dev/zero | ssh-keygen -t rsa -b 4096 -q -P ""', dryrun)
+        if type(names) != list:
+            _names = Parameter.expand(names)
+
+        for name in _names:
+            # command = "ssh red02 'ssh-keygen -t rsa -b 4096 -q -N "" -P "" -f {filename}'"
+            Host.ssh(name,
+                     f'\'ssh-keygen -t rsa -b 4096 -q -N "" -P "" -f {filename}\'',
+                     user=user,
+                     dryrun=dryrun,
+                     verbose=verbose)
 
 
     # cat ~/.ssh/id_rsa.pub | ssh {user}@{ip} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
