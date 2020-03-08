@@ -3,6 +3,7 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import readfile, writefile
 import os
 from glob import glob
+from cloudmesh.common.parameter import Parameter
 
 class Host(object):
 
@@ -10,18 +11,24 @@ class Host(object):
     @staticmethod
     def ssh(user, names, command, output="lines", dryrun=False):
         """
+        Executes the command on the hosts specified by the hosts given in the names list
 
         :param user: the username
-        :param names:
-        :param command:
-        :param output:
-        :return:
+        :param names: the list of the names of the hosts
+        :param command: the command to be executed
+        :param output: the output returned as list
+        :return: a list of tuples of the form (name, result) where the
+                 output is in result and if splitlines is specified the result
+                 is a ist
 
-        Advanced usage:
+        Example:
 
-        cms host ssh red[01-03] \"cat /Users/grey/Desktop/github/cloudmesh-community/cm/fa19-516-158/cluster/{name}/authorized_keys\"
+            cms host ssh red[01-03] "cat ~/.ssh/authorized_keys"
+
 
         """
+        if type(names) != list:
+            names = Parameter(names)
 
         results = []
 
@@ -50,6 +57,9 @@ class Host(object):
                dryrun=False,
                append=False,
                tmp=None):
+
+        if type(names) != list:
+            names = Parameter(names)
 
         tmp_dir = tmp or path_expand("~/.cloudmesh/tmp")
         Shell.mkdir(tmp_dir)
@@ -82,6 +92,9 @@ class Host(object):
                 source,
                 destinaton="~/.ssh/authorized_keys",
                 dryrun=False):
+
+        if type(names) != list:
+            names = Parameter(names)
 
         for name in names:
             directory = os.path.dirname(destination)
