@@ -4,59 +4,9 @@ from cloudmesh.common.util import readfile, writefile
 import os
 from glob import glob
 from cloudmesh.common.parameter import Parameter
+from cloudmesh.common.Host import Host as CommonHost
 
 class Host(object):
-
-    # noinspection PyPep8
-    @staticmethod
-    def ssh(names,
-            command,
-            user=None,
-            output="lines",
-            dryrun=False,
-            verbose=True):
-        """
-        Executes the command on the hosts specified by the hosts given in the names list
-
-        :param user: the username
-        :param names: the list of the names of the hosts
-        :param command: the command to be executed
-        :param output: the output returned as list
-        :return: a list of tuples of the form (name, result) where the
-                 output is in result and if splitlines is specified the result
-                 is a ist
-
-        Example:
-
-            cms host ssh red[01-03] "cat ~/.ssh/authorized_keys"
-
-
-        """
-        if type(names) == str:
-            _names = Parameter.expand(names)
-
-        results = []
-
-        for name in _names:
-            _command = command.format(name=name)
-
-            if user is None:
-                _command = f"ssh {name} {_command}"
-            else:
-                _command = f"ssh {user}@{name} {_command}"
-            if dryrun or verbose:
-                print(_command)
-            else:
-                result = Shell.run(_command)
-                if verbose:
-                    print(f"result={result}")
-                if output == "lines":
-                    lines = result.splitlines()
-                    results.append((name, lines))
-                elif output == "string":
-                    results.append((name, result))
-
-        return results
 
     @staticmethod
     def gather(user,
@@ -112,26 +62,6 @@ class Host(object):
             destination = f"{user}@{name}:{destination}"
             print (f"{source} -> {destination}")
             Host.scp(source, destination, dryrun)
-
-    @staticmethod
-    def generate_key(names,
-                     filename="~/.ssh/id_rsa",
-                     user=None,
-                     output="lines",
-                     dryrun=False,
-                     verbose=True):
-
-        if type(names) != list:
-            _names = Parameter.expand(names)
-
-        for name in _names:
-            # command = "ssh red02 'ssh-keygen -t rsa -b 4096 -q -N "" -P "" -f {filename}'"
-            Host.ssh(name,
-                     f'\'ssh-keygen -t rsa -b 4096 -q -N "" -P "" -f {filename}\'',
-                     user=user,
-                     dryrun=dryrun,
-                     verbose=verbose)
-
 
     # cat ~/.ssh/id_rsa.pub | ssh {user}@{ip} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 
