@@ -72,18 +72,6 @@ class Test_host:
         for result in results:
             assert result.stdout.strip().lower() == sys.platform
 
-    def test_ssh_keygen_fake(self):
-        HEADING()
-
-        result = CommonHost.generate_key(
-            hosts="red[01-03]",
-            filename="~/.ssh/id_rsa_tmp",
-            dryrun=False)
-        pprint (result)
-        assert len(result) == len(Parameter.expand("red[01-03]"))
-
-    # This test doe not work well on a local host
-
     def test_ssh_keygen(self):
         HEADING()
 
@@ -95,8 +83,10 @@ class Test_host:
                 filename=f"~/.ssh/id_rsa_{host}",
                 dryrun=False)
             #time.sleep(1)
+            banner("result", c="-")
             pprint (result)
-            assert len(result[0]) > 1
+
+            #assert len(result[0]) > 1
 
     def test_gather_keys(self):
         HEADING()
@@ -105,10 +95,7 @@ class Test_host:
 
         pprint(result)
 
-
-
-
-class rest:
+        assert len(result) == len(hosts)
 
     def test_clean(self):
         HEADING()
