@@ -84,7 +84,6 @@ class Test_host:
 
     # This test doe not work well on a local host
 
-    """
     def test_ssh_keygen(self):
         HEADING()
 
@@ -98,7 +97,6 @@ class Test_host:
             #time.sleep(1)
             pprint (result)
             assert len(result[0]) > 1
-    """
 
     def test_gather_keys(self):
         HEADING()
@@ -106,6 +104,8 @@ class Test_host:
         result = CommonHost.gather_keys(hosts=hosts)
 
         pprint(result)
+
+
 
 
 class rest:

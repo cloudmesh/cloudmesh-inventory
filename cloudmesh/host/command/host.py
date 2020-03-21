@@ -8,6 +8,8 @@ from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.common.util import path_expand
+from cloudmesh.shell.command import map_parameters
+import os
 
 class HostCommand(PluginCommand):
 
@@ -20,13 +22,12 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun]
-              host key create NAMES [--dryrun]
+              host key create NAMES [--user=USER] [--dryrun]
               host key list NAMES [--dryrun]
-              host key fix FILE [--dryrun]
+              host key update FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
               host key gather NAMES [FILE]
               host key scatter NAMES [FILE]
-              host key generate NAMES
 
           This command does some useful things.
 
@@ -82,7 +83,10 @@ class HostCommand(PluginCommand):
                     ssh key scp red[01-10] pubkeys.txt
 
         """
-        dryrun = arguments["--dryrun"]
+        map_parameters(arguments,
+                       'dryrun',
+                       'user')
+        dryrun = arguments.dryrun
 
         if dryrun:
             VERBOSE(arguments)
@@ -99,9 +103,14 @@ class HostCommand(PluginCommand):
             pprint(results)
 
         elif arguments.key and arguments.create:
+            if arguments.user:
+                username = arguments.user
             names = Parameter.expand(arguments.NAMES)
-            command = "'ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa'"
-            results = Host.ssh(names, command, dryrun=dryrun)
+            command = "'ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa <<< y'"
+            results = Host.ssh(names, command,
+                               username=arguments.user,
+                               dryrun=dryrun,
+                               executor=os.system)
 
         elif arguments.key and arguments.list:
 
@@ -117,7 +126,7 @@ class HostCommand(PluginCommand):
             if not dryrun:
                 print(result, end='')
 
-        elif arguments.key and arguments.fix:
+        elif arguments.key and arguments.update:
             Host.fix_keys_file(arguments.FILE)
 
         elif arguments.key and arguments.scp:
@@ -132,7 +141,8 @@ class HostCommand(PluginCommand):
         elif arguments.key and arguments.gather:
 
             names = Parameter.expand(arguments.NAMES)
-            file = arguments.get("FILE") or path_expand("~/.cloudmesh/keys/authorized_keys")
+            file = arguments.get("FILE") or \
+                   path_expand("~/.cloudmesh/keys/authorized_keys")
 
             Host.gather(names,
                         "~/.ssh/id_rsa.pub",
@@ -141,7 +151,8 @@ class HostCommand(PluginCommand):
         elif arguments.key and arguments.gather:
 
             names = Parameter.expand(arguments.NAMES)
-            file = arguments.get("FILE") or path_expand("~/.cloudmesh/keys/authorized_keys")
+            file = arguments.get("FILE") or \
+                   path_expand("~/.cloudmesh/keys/authorized_keys")
             Host.scatter(names, file, "~/.ssh/authorized_keys")
 
         print()

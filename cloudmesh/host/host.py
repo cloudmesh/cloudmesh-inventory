@@ -6,7 +6,17 @@ from glob import glob
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.Host import Host as CommonHost
 
-class Host(object):
+
+class Host(CommonHost):
+
+    @staticmethod
+    def os_ssh(names, command, dryrun=False):
+        for name in names:
+            executor = f"ssh {name} {command}"
+            print()
+            print (executor)
+            os.system(executor)
+            print()
 
     @staticmethod
     def gather(user,
