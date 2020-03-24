@@ -148,12 +148,18 @@ class HostCommand(PluginCommand):
                                username=arguments.user,
                                verbose=False)
 
+            # remove duplicates
+
             if results is None:
                 Console.error("No keys found")
                 return ""
 
+            # geting the output and also removing duplicates
+            output = list(set([element["stdout"] for element in results]))
 
-            output = "\n".join(element["stdout"] for element in results)
+            output = '\n'.join(output)
+
+
 
             if arguments.FILE:
                 filename = path_expand(arguments.FILE)
