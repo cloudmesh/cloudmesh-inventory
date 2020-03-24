@@ -29,7 +29,7 @@ class HostCommand(PluginCommand):
               host key list NAMES
               host key update FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
-              host key gather NAMES [FILE]
+              host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES [FILE]
 
           This command does some useful things.
@@ -98,42 +98,42 @@ class HostCommand(PluginCommand):
 
             destinations = Parameter.expand(arguments.DESTINATION)
             source = arguments.SOURCE
-            results = Host.scp(source, destinations, output="lines")
+            results_key = Host.scp(source, destinations, output="lines")
 
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
 
             # print (names)
 
-            results = Host.ssh(hosts=names, command=arguments.COMMAND)
+            results_key = Host.ssh(hosts=names, command=arguments.COMMAND)
             print (arguments.COMMAND)
-            pprint(results)
+            pprint(results_key)
 
         elif arguments.key and arguments.create:
 
             names = Parameter.expand(arguments.NAMES)
             command = 'ssh-keygen -q -N "" -f ~/.ssh/id_rsa <<< y'
-            results = Host.ssh(hosts=names,
+            results_key = Host.ssh(hosts=names,
                                command=command,
                                username=arguments.user,
                                dryrun=dryrun,
                                executor=os.system)
-            results = Host.ssh(hosts=names,
+            results_key = Host.ssh(hosts=names,
                                command='cat .ssh/id_rsa.pub',
                                username=arguments.user)
 
-            pprint(results)
+            pprint(results_key)
 
 
         elif arguments.key and arguments.list:
 
             names = Parameter.expand(arguments.NAMES)
 
-            results = Host.ssh(hosts=names,
+            results_key = Host.ssh(hosts=names,
                                command='cat .ssh/id_rsa.pub',
                                username=arguments.user)
 
-            pprint(results)
+            pprint(results_key)
 
 
 
@@ -143,23 +143,29 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
 
-            results = Host.ssh(hosts=names,
+            results_key = Host.ssh(hosts=names,
                                command='cat .ssh/id_rsa.pub',
                                username=arguments.user,
                                verbose=False)
+            results_authorized = Host.ssh(hosts=names,
+                               command='cat .ssh/authorized_keys',
+                               username=arguments.user,
+                               verbose=False)
+
 
             # remove duplicates
 
-            if results is None:
+            if results_key is None and results_authorized is None:
                 Console.error("No keys found")
                 return ""
 
             # geting the output and also removing duplicates
-            output = list(set([element["stdout"] for element in results]))
+            output = list(set(
+                [element["stdout"] for element in results_key] +
+                [element["stdout"] for element in results_authorized]
+            ))
 
             output = '\n'.join(output)
-
-
 
             if arguments.FILE:
                 filename = path_expand(arguments.FILE)
@@ -170,6 +176,9 @@ class HostCommand(PluginCommand):
                     f.write(output)
             else:
                 print(output)
+
+
+
 
         elif arguments.key and arguments.scatter:
 
