@@ -100,20 +100,29 @@ class HostCommand(PluginCommand):
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
 
-            print (names)
+            # print (names)
 
-            results = Host.ssh(names, arguments.COMMAND)
+            results = Host.ssh(hosts=names, command=arguments.COMMAND)
+            print (arguments.COMMAND)
             pprint(results)
 
         elif arguments.key and arguments.create:
-            if arguments.user:
-                username = arguments.user
+
+            print ("USER", arguments.user)
+
             names = Parameter.expand(arguments.NAMES)
-            command = "'ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa <<< y'"
-            results = Host.ssh(names, command,
+            command = 'ssh-keygen -q -N "" -f ~/.ssh/id_rsa <<< y'
+            results = Host.ssh(hosts=names,
+                               command=command,
                                username=arguments.user,
                                dryrun=dryrun,
                                executor=os.system)
+            results = Host.ssh(hosts=names,
+                               command='cat .ssh/id_rsa.pub',
+                               username=arguments.user)
+
+            pprint(results)
+
 
         elif arguments.key and arguments.list:
 

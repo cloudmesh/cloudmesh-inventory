@@ -19,8 +19,27 @@ class Host(CommonHost):
             print()
 
     @staticmethod
-    def ssh(names, command, dryrun=False):
-        result = CommonHost.ssh(','.join(names), command=command)
+    def ssh(hosts=None,
+            command=None,
+            username=None,
+            key="~/.ssh/id_rsa.pub",
+            shell=False,
+            processors=3,
+            dryrun=False,
+            executor=None):
+
+        if type(hosts) == list:
+            joined = ','.join(hosts)
+
+        result = CommonHost.ssh(hosts=joined,
+                                command=command,
+                                username=None,
+                                key="~/.ssh/id_rsa.pub",
+                                shell=False,
+                                processors=3,
+                                dryrun=False,
+                                executor=None)
+
         return result
 
     @staticmethod
