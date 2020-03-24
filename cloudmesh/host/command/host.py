@@ -178,8 +178,6 @@ class HostCommand(PluginCommand):
                 print(output)
 
 
-
-
         elif arguments.key and arguments.scatter:
 
             names = Parameter.expand(arguments.NAMES)
