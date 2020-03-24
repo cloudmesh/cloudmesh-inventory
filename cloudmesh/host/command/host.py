@@ -99,6 +99,9 @@ class HostCommand(PluginCommand):
 
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
+
+            print (names)
+
             results = Host.ssh(names, arguments.COMMAND)
             pprint(results)
 

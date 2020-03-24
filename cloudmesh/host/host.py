@@ -19,6 +19,11 @@ class Host(CommonHost):
             print()
 
     @staticmethod
+    def ssh(names, command, dryrun=False):
+        result = CommonHost.ssh(','.join(names), command=command)
+        return result
+
+    @staticmethod
     def gather(user,
                names,
                source,
