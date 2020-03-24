@@ -10,6 +10,9 @@ from cloudmesh.shell.command import command
 from cloudmesh.common.util import path_expand
 from cloudmesh.shell.command import map_parameters
 import os
+from cloudmesh.common.Shell import Shell
+import sys
+from cloudmesh.common.console import Console
 
 class HostCommand(PluginCommand):
 
@@ -23,7 +26,7 @@ class HostCommand(PluginCommand):
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun]
               host key create NAMES [--user=USER] [--dryrun]
-              host key list NAMES [--dryrun]
+              host key list NAMES
               host key update FILE [--dryrun]
               host key scp NAMES FILE [--dryrun]
               host key gather NAMES [FILE]
@@ -108,8 +111,6 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.create:
 
-            print ("USER", arguments.user)
-
             names = Parameter.expand(arguments.NAMES)
             command = 'ssh-keygen -q -N "" -f ~/.ssh/id_rsa <<< y'
             results = Host.ssh(hosts=names,
@@ -128,45 +129,72 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
 
-            command = "'cat ~/.ssh/id_rsa.pub'"
+            results = Host.ssh(hosts=names,
+                               command='cat .ssh/id_rsa.pub',
+                               username=arguments.user)
 
-            results = Host.ssh(names, command, dryrun=dryrun)
-            # pprint(results)
+            pprint(results)
 
-            result = Host.concatenate_keys(results)
 
-            if not dryrun:
-                print(result, end='')
-
-        elif arguments.key and arguments.update:
-            Host.fix_keys_file(arguments.FILE)
-
-        elif arguments.key and arguments.scp:
-
-            Host.fix_keys_file(arguments.FILE)
-            names = Parameter.expand(arguments.NAMES)
-
-            for name in names:
-                destinations = [f"{name}:~/.ssh/authorized_keys"]
-                results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
 
         elif arguments.key and arguments.gather:
 
+            VERBOSE(arguments)
+
             names = Parameter.expand(arguments.NAMES)
-            file = arguments.get("FILE") or \
-                   path_expand("~/.cloudmesh/keys/authorized_keys")
 
-            Host.gather(names,
-                        "~/.ssh/id_rsa.pub",
-                        file)
+            results = Host.ssh(hosts=names,
+                               command='cat .ssh/id_rsa.pub',
+                               username=arguments.user,
+                               verbose=False)
 
-        elif arguments.key and arguments.gather:
+            if results is None:
+                Console.error("No keys found")
+                return ""
+
+
+            output = "\n".join(element["stdout"] for element in results)
+
+            if arguments.FILE:
+                filename = path_expand(arguments.FILE)
+                print ("FFF", filename)
+
+                directory = os.path.dirname(filename)
+                if directory:
+                    print ("D", directory)
+                    Shell.mkdir(directory)
+                with open (filename, "w") as f:
+                    f.write(output)
+            else:
+                print(output)
+
+        elif arguments.key and arguments.scatter:
 
             names = Parameter.expand(arguments.NAMES)
             file = arguments.get("FILE") or \
                    path_expand("~/.cloudmesh/keys/authorized_keys")
             Host.scatter(names, file, "~/.ssh/authorized_keys")
 
-        print()
+
+
+        elif arguments.key and arguments.update:
+            raise NotImplementedError
+
+            """
+            Host.fix_keys_file(arguments.FILE)
+            """
+
+        elif arguments.key and arguments.scp:
+
+            raise NotImplementedError
+
+            """
+            Host.fix_keys_file(arguments.FILE)
+            names = Parameter.expand(arguments.NAMES)
+
+            for name in names:
+                destinations = [f"{name}:~/.ssh/authorized_keys"]
+                results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
+            """
 
         return ""

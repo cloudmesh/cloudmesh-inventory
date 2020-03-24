@@ -26,7 +26,8 @@ class Host(CommonHost):
             shell=False,
             processors=3,
             dryrun=False,
-            executor=None):
+            executor=None,
+            verbose=False):
 
         if type(hosts) == list:
             joined = ','.join(hosts)
@@ -34,11 +35,12 @@ class Host(CommonHost):
         result = CommonHost.ssh(hosts=joined,
                                 command=command,
                                 username=None,
-                                key="~/.ssh/id_rsa.pub",
-                                shell=False,
-                                processors=3,
-                                dryrun=False,
-                                executor=None)
+                                key=key,
+                                shell=shell,
+                                processors=processors,
+                                dryrun=dryrun,
+                                executor=None,
+                                verbose=verbose)
 
         return result
 
@@ -137,6 +139,7 @@ class Host(CommonHost):
         result = result.strip()
         return result
 
+    """
     @staticmethod
     def fix_keys_file(filename):
         # concatenate ~/.ssh/id_rsa.pub
@@ -151,3 +154,4 @@ class Host(CommonHost):
         keys = ('\n'.join(keys_list) + '\n')
 
         writefile(filename, str(keys))
+    """
