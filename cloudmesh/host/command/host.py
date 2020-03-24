@@ -157,11 +157,8 @@ class HostCommand(PluginCommand):
 
             if arguments.FILE:
                 filename = path_expand(arguments.FILE)
-                print ("FFF", filename)
-
                 directory = os.path.dirname(filename)
                 if directory:
-                    print ("D", directory)
                     Shell.mkdir(directory)
                 with open (filename, "w") as f:
                     f.write(output)
