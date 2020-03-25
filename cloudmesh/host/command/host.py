@@ -27,10 +27,8 @@ class HostCommand(PluginCommand):
               host ssh NAMES COMMAND [--dryrun]
               host key create NAMES [--user=USER] [--dryrun]
               host key list NAMES
-              host key update FILE [--dryrun]
-              host key scp NAMES FILE [--dryrun]
               host key gather NAMES [--authorized_keys] [FILE]
-              host key scatter NAMES [FILE]
+              host key scatter NAMES FILE
 
           This command does some useful things.
 
@@ -181,30 +179,12 @@ class HostCommand(PluginCommand):
         elif arguments.key and arguments.scatter:
 
             names = Parameter.expand(arguments.NAMES)
-            file = arguments.get("FILE") or \
-                   path_expand("~/.cloudmesh/keys/authorized_keys")
-            Host.scatter(names, file, "~/.ssh/authorized_keys")
+            file = arguments.get("FILE")
 
+            if not os.path.isfile(file):
+                Console.error("The file does not exist")
+                return ""
 
-
-        elif arguments.key and arguments.update:
-            raise NotImplementedError
-
-            """
-            Host.fix_keys_file(arguments.FILE)
-            """
-
-        elif arguments.key and arguments.scp:
-
-            raise NotImplementedError
-
-            """
-            Host.fix_keys_file(arguments.FILE)
-            names = Parameter.expand(arguments.NAMES)
-
-            for name in names:
-                destinations = [f"{name}:~/.ssh/authorized_keys"]
-                results = Host.scp(arguments.FILE, destinations, dryrun=dryrun)
-            """
+            Host.scatter(hosts=names, source=file, destination=".ssh/authorized_keys")
 
         return ""

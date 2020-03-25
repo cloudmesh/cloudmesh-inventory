@@ -5,7 +5,8 @@ import os
 from glob import glob
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.Host import Host as CommonHost
-
+from cloudmesh.common.util import banner
+from pprint import pprint
 
 class Host(CommonHost):
 
@@ -52,6 +53,20 @@ class Host(CommonHost):
                dryrun=False,
                append=False,
                tmp=None):
+        """
+
+        please note this is not used as we have a temporary better
+        implemnetation in command.
+
+        :param user:
+        :param names:
+        :param source:
+        :param destination:
+        :param dryrun:
+        :param append:
+        :param tmp:
+        :return:
+        """
 
         if type(names) != list:
             _names = Parameter.expand(names)
@@ -82,27 +97,47 @@ class Host(CommonHost):
 
 
     @staticmethod
-    def scatter(user,
-                names,
-                source,
-                destinaton="~/.ssh/authorized_keys",
+    def scatter(user=None,
+                hosts=None,
+                source=None,
+                processors=3,
+                destination="~/.ssh/authorized_keys",
                 dryrun=False):
 
-        if type(names) != list:
-            _names = Parameter.expand(names)
 
-        for name in _names:
-            directory = os.path.dirname(destination)
-            Host.ssh(f"{user}@{name}", f"mkdir -p directory", dryrun)
+        if type(hosts) == list:
+            joined = ','.join(hosts)
+        else:
+            joined = hosts
 
-            destination = f"{user}@{name}:{destination}"
-            print (f"{source} -> {destination}")
-            Host.scp(source, destination, dryrun)
+        command = "mkdir -p .ssh"
+        print ("H", hosts)
+
+
+        results = CommonHost.ssh(hosts=joined,
+                                command=command,
+                                username=None,
+                                processors=processors)
+
+        pprint (results)
+
+        names = Parameter.expand(joined)
+
+
+        for name in names:
+
+            if user:
+                _destination = f"{user}@{name}:{destination}"
+            else:
+                _destination = f"{name}:{destination}"
+
+            print (f"{source} -> {_destination}")
+            Host.scp(source, _destination, dryrun)
 
     # cat ~/.ssh/id_rsa.pub | ssh {user}@{ip} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 
     @staticmethod
-    def scp(source, destinations, output="lines", dryrun=False):
+    def scp(source, destination, output="lines", dryrun=False):
         """
 
         :param names:
@@ -111,23 +146,11 @@ class Host(CommonHost):
         :return:
         """
 
-        results = []
-        for destination in destinations:
-            command = (f"scp  {source} {destination}")
-            # result = command.format(name=name)
+        command = (f"scp  {source} {destination}")
+        if not dryrun:
+            result = Shell.run(command)
 
-            print(command)
-
-            if not dryrun:
-                result = Shell.run(command)
-
-                if output == "lines":
-                    lines = result.splitlines()
-                    results.append((destination, lines))
-                elif output == "string":
-                    results.append((destination, result))
-
-        return results
+        return result
 
     @staticmethod
     def concatenate_keys(results):
