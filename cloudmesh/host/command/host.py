@@ -40,6 +40,7 @@ class HostCommand(PluginCommand):
 
           Options:
               --dryrun   shows what would be done but does not execute
+              --output=FORMAT  the format of the output [default: table]
 
           Description:
 
