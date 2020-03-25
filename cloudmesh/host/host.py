@@ -123,7 +123,6 @@ class Host(CommonHost):
 
         names = Parameter.expand(joined)
 
-
         for name in names:
 
             if user:
@@ -133,8 +132,6 @@ class Host(CommonHost):
 
             print (f"{source} -> {_destination}")
             Host.scp(source, _destination, dryrun)
-
-    # cat ~/.ssh/id_rsa.pub | ssh {user}@{ip} "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
 
     @staticmethod
     def scp(source, destination, output="lines", dryrun=False):
