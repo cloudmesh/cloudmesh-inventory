@@ -29,7 +29,7 @@ class HostCommand(PluginCommand):
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
-              host key list NAMES
+              host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
 
@@ -40,7 +40,7 @@ class HostCommand(PluginCommand):
 
           Options:
               --dryrun   shows what would be done but does not execute
-              --output=FORMAT  the format of the output [default: table]
+              --output=FORMAT  the format of the output
 
           Description:
 
@@ -88,6 +88,16 @@ class HostCommand(PluginCommand):
                     ssh key scp red[01-10] pubkeys.txt
 
         """
+
+        def _print(results):
+            arguments.output = arguments.output or 'table'
+
+            if arguments.output == 'table':
+                print(Printer.write(results,
+                                    order=['host', 'success', 'stdout']))
+            else:
+                pprint(results)
+
         map_parameters(arguments,
                        'dryrun',
                        'output',
@@ -110,12 +120,7 @@ class HostCommand(PluginCommand):
 
             results = Host.ssh(hosts=names,
                                command=arguments.COMMAND)
-
-            if arguments.output == 'table':
-                print(Printer.write(results,
-                                    order=['host', 'success', 'stdout']))
-            else:
-                pprint(results)
+            _print(results)
 
         elif arguments.key and arguments.create:
 
@@ -124,53 +129,28 @@ class HostCommand(PluginCommand):
                 username=arguments.user,
                 dryrun=dryrun)
 
-            if arguments.output == 'table':
-                print(Printer.write(results,
-                                    order=['host', 'success', 'stdout']))
-            else:
-                pprint(results)
-
+            _print(results)
 
         elif arguments.key and arguments.list:
 
             names = Parameter.expand(arguments.NAMES)
 
-            results_key = Host.ssh(hosts=names,
+            results = Host.ssh(hosts=names,
                                    command='cat .ssh/id_rsa.pub',
                                    username=arguments.user)
 
-            pprint(results_key)
-
+            _print(results)
 
 
         elif arguments.key and arguments.gather:
 
-            VERBOSE(arguments)
-
-            names = Parameter.expand(arguments.NAMES)
-
-            results_key = Host.ssh(hosts=names,
-                                   command='cat .ssh/id_rsa.pub',
-                                   username=arguments.user,
-                                   verbose=False)
-            results_authorized = Host.ssh(hosts=names,
-                                          command='cat .ssh/authorized_keys',
-                                          username=arguments.user,
-                                          verbose=False)
-
-            # remove duplicates
-
-            if results_key is None and results_authorized is None:
-                Console.error("No keys found")
-                return ""
-
-            # geting the output and also removing duplicates
-            output = list(set(
-                [element["stdout"] for element in results_key] +
-                [element["stdout"] for element in results_authorized]
-            ))
-
-            output = '\n'.join(output)
+            output = Host.gather_keys(
+                username=arguments.user,
+                hosts=arguments.NAMES,
+                filename="~/.ssh/id_rsa.pub",
+                key="~/.ssh/id_rsa",
+                processors=3,
+                dryrun=False)
 
             if arguments.FILE:
                 filename = path_expand(arguments.FILE)
@@ -192,14 +172,10 @@ class HostCommand(PluginCommand):
                 Console.error("The file does not exist")
                 return ""
 
-            # Host.scatter(hosts=names, source=file, destination=".ssh/authorized_keys")
+            result = Host.put(hosts=names,
+                         source=file,
+                         destination=".ssh/authorized_keys")
 
-            from cloudmesh.common.Host import Host as ParallelHost
-
-            result = ParallelHost.run(
-                hosts=names,
-                command='ssh {host} uname',
-                shell=True)
-            pprint(result)
+            _print(result)
 
         return ""
