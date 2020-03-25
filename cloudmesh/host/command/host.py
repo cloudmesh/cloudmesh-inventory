@@ -4,7 +4,8 @@ from pprint import pprint
 
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
-from cloudmesh.host.host import Host
+from cloudmesh.common.Host import Host
+# from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.common.util import path_expand
@@ -13,6 +14,8 @@ import os
 from cloudmesh.common.Shell import Shell
 import sys
 from cloudmesh.common.console import Console
+from cloudmesh.common.Printer import Printer
+
 
 class HostCommand(PluginCommand):
 
@@ -24,8 +27,8 @@ class HostCommand(PluginCommand):
 
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
-              host ssh NAMES COMMAND [--dryrun]
-              host key create NAMES [--user=USER] [--dryrun]
+              host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
+              host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
@@ -86,6 +89,7 @@ class HostCommand(PluginCommand):
         """
         map_parameters(arguments,
                        'dryrun',
+                       'output',
                        'user')
         dryrun = arguments.dryrun
 
@@ -103,24 +107,27 @@ class HostCommand(PluginCommand):
 
             # print (names)
 
-            results_key = Host.ssh(hosts=names, command=arguments.COMMAND)
-            print (arguments.COMMAND)
-            pprint(results_key)
+            results = Host.ssh(hosts=names,
+                               command=arguments.COMMAND)
+
+            if arguments.output == 'table':
+                print(Printer.write(results,
+                                    order=['host', 'success', 'stdout']))
+            else:
+                pprint(results)
 
         elif arguments.key and arguments.create:
 
-            names = Parameter.expand(arguments.NAMES)
-            command = 'ssh-keygen -q -N "" -f ~/.ssh/id_rsa <<< y'
-            results_key = Host.ssh(hosts=names,
-                               command=command,
-                               username=arguments.user,
-                               dryrun=dryrun,
-                               executor=os.system)
-            results_key = Host.ssh(hosts=names,
-                               command='cat .ssh/id_rsa.pub',
-                               username=arguments.user)
+            results = Host.ssh_keygen(
+                hosts=arguments.NAMES,
+                username=arguments.user,
+                dryrun=dryrun)
 
-            pprint(results_key)
+            if arguments.output == 'table':
+                print(Printer.write(results,
+                                    order=['host', 'success', 'stdout']))
+            else:
+                pprint(results)
 
 
         elif arguments.key and arguments.list:
@@ -128,8 +135,8 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
 
             results_key = Host.ssh(hosts=names,
-                               command='cat .ssh/id_rsa.pub',
-                               username=arguments.user)
+                                   command='cat .ssh/id_rsa.pub',
+                                   username=arguments.user)
 
             pprint(results_key)
 
@@ -142,14 +149,13 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
 
             results_key = Host.ssh(hosts=names,
-                               command='cat .ssh/id_rsa.pub',
-                               username=arguments.user,
-                               verbose=False)
+                                   command='cat .ssh/id_rsa.pub',
+                                   username=arguments.user,
+                                   verbose=False)
             results_authorized = Host.ssh(hosts=names,
-                               command='cat .ssh/authorized_keys',
-                               username=arguments.user,
-                               verbose=False)
-
+                                          command='cat .ssh/authorized_keys',
+                                          username=arguments.user,
+                                          verbose=False)
 
             # remove duplicates
 
@@ -170,7 +176,7 @@ class HostCommand(PluginCommand):
                 directory = os.path.dirname(filename)
                 if directory:
                     Shell.mkdir(directory)
-                with open (filename, "w") as f:
+                with open(filename, "w") as f:
                     f.write(output)
             else:
                 print(output)
@@ -178,13 +184,21 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.scatter:
 
-            names = Parameter.expand(arguments.NAMES)
+            names = arguments.NAMES
             file = arguments.get("FILE")
 
             if not os.path.isfile(file):
                 Console.error("The file does not exist")
                 return ""
 
-            Host.scatter(hosts=names, source=file, destination=".ssh/authorized_keys")
+            # Host.scatter(hosts=names, source=file, destination=".ssh/authorized_keys")
+
+            from cloudmesh.common.Host import Host as ParallelHost
+
+            result = ParallelHost.run(
+                hosts=names,
+                command='ssh {host} uname',
+                shell=True)
+            pprint(result)
 
         return ""

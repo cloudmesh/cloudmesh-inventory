@@ -78,7 +78,7 @@ class Test_host:
         hosts = Parameter.expand("red[01-03]")
         for host in hosts:
             banner(host)
-            result = CommonHost.generate_key(
+            result = CommonHost.ssh_keygen(
                 hosts=host,
                 filename=f"~/.ssh/id_rsa_{host}",
                 dryrun=False)

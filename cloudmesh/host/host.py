@@ -4,11 +4,11 @@ from cloudmesh.common.util import readfile, writefile
 import os
 from glob import glob
 from cloudmesh.common.parameter import Parameter
-from cloudmesh.common.Host import Host as CommonHost
+from cloudmesh.common.Host import Host as ParallelHost
 from cloudmesh.common.util import banner
 from pprint import pprint
 
-class Host(CommonHost):
+class Host(ParallelHost):
 
     @staticmethod
     def os_ssh(names, command, dryrun=False):
@@ -18,32 +18,6 @@ class Host(CommonHost):
             print (executor)
             os.system(executor)
             print()
-
-    @staticmethod
-    def ssh(hosts=None,
-            command=None,
-            username=None,
-            key="~/.ssh/id_rsa.pub",
-            shell=False,
-            processors=3,
-            dryrun=False,
-            executor=None,
-            verbose=False):
-
-        if type(hosts) == list:
-            joined = ','.join(hosts)
-
-        result = CommonHost.ssh(hosts=joined,
-                                command=command,
-                                username=None,
-                                key=key,
-                                shell=shell,
-                                processors=processors,
-                                dryrun=dryrun,
-                                executor=None,
-                                verbose=verbose)
-
-        return result
 
     @staticmethod
     def gather(user,
@@ -136,7 +110,6 @@ class Host(CommonHost):
     @staticmethod
     def scp(source, destination, output="lines", dryrun=False):
         """
-
         :param names:
         :param command:
         :param output:
@@ -145,6 +118,32 @@ class Host(CommonHost):
 
         command = (f"scp  {source} {destination}")
         if not dryrun:
+            result = Shell.run(command)
+
+        return result
+
+    @staticmethod
+    def concatenate_keys(results):
+        result = ""
+        for entry in results:
+            name, key = entry
+            key = ''.join(key)
+            result += str(key) + '\n'
+        result = result.strip()
+        return result
+
+    @staticmethod
+    def put(source, destination, output="lines", dryrun=False):
+        """
+        :param names:
+        :param command:
+        :param output:
+        :return:
+        """
+
+        command = (f"scp  {source} {destination}")
+        if not dryrun:
+            # CommonHost.put
             result = Shell.run(command)
 
         return result
