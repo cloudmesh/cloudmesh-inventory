@@ -28,6 +28,7 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
+              host config NAMES IPS [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
@@ -46,6 +47,7 @@ class HostCommand(PluginCommand):
 
               host scp NAMES SOURCE DESTINATION
 
+                TBD
 
               host ssh NAMES COMMAND
 
@@ -56,15 +58,21 @@ class HostCommand(PluginCommand):
               host key create NAMES
                 create a ~/.ssh/id_rsa and id_rsa.pub on all hosts specified
                 Example:
-                    ssh key create red[01-10]
+                    ssh key create "red[01-10]"
 
               host key list NAMES
 
-                cats all id_rsa.pub keys from all hosts specifed
+                list all id_rsa.pub keys from all hosts specifed
                  Example:
                      ssh key list red[01-10]
 
-              host key fix FILE
+              host key gather HOSTS FILE
+
+                gathers all keys from file FILE including the one from localhost.
+
+                    ssh key gather "red[01-10]" keys.txt
+
+              host key scatter HOSTS FILE
 
                 copies all keys from file FILE to authorized_keys on all hosts,
                 but also makes sure that the users ~/.ssh/id_rsa.pub key is in
@@ -74,8 +82,7 @@ class HostCommand(PluginCommand):
                 2) removes all duplicated keys
 
                 Example:
-                    ssh key list red[01-10] > pubkeys.txt
-                    ssh key fix pubkeys.txt
+                    ssh key scatter "red[01-10]"
 
               host key scp NAMES FILE
 
@@ -136,8 +143,8 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
 
             results = Host.ssh(hosts=names,
-                                   command='cat .ssh/id_rsa.pub',
-                                   username=arguments.user)
+                               command='cat .ssh/id_rsa.pub',
+                               username=arguments.user)
 
             _print(results)
 
@@ -173,9 +180,20 @@ class HostCommand(PluginCommand):
                 return ""
 
             result = Host.put(hosts=names,
-                         source=file,
-                         destination=".ssh/authorized_keys")
+                              source=file,
+                              destination=".ssh/authorized_keys")
 
             _print(result)
+
+        elif arguments.config:
+
+            VERBOSE(arguments)
+
+            key = arguments.key or "~/.ssh/id_rsa.pub"
+            result = Host.config(hosts=arguments.NAMES,
+                        ips=arguments.IPS,
+                        username=arguments.user,
+                        key=key)
+            print (result)
 
         return ""
