@@ -1,20 +1,19 @@
 from __future__ import print_function
 
+import os
 from pprint import pprint
 
+from cloudmesh.common.Host import Host
+from cloudmesh.common.Printer import Printer
+from cloudmesh.common.Shell import Shell
+from cloudmesh.common.console import Console
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
-from cloudmesh.common.Host import Host
+from cloudmesh.common.util import path_expand
 # from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
-from cloudmesh.common.util import path_expand
 from cloudmesh.shell.command import map_parameters
-import os
-from cloudmesh.common.Shell import Shell
-import sys
-from cloudmesh.common.console import Console
-from cloudmesh.common.Printer import Printer
 
 
 class HostCommand(PluginCommand):
@@ -28,7 +27,8 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
-              host config NAMES IPS [--user=USER] [--key=PUBLIC]
+              host config NAMES [IPS] [--user=USER] [--key=PUBLIC]
+              host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
@@ -93,6 +93,31 @@ class HostCommand(PluginCommand):
                 Example:
                     ssh key list red[01-10] > pubkeys.txt
                     ssh key scp red[01-10] pubkeys.txt
+
+              host config NAMES IPS [--user=USER] [--key=PUBLIC]
+
+                generates an ssh config file tempalte that can be added to your
+                .ssh/config file
+
+                Example:
+                    cms host config "red,red[01-03]" "198.168.1.[1-4]" --user=pi
+
+              host check NAMES [--user=USER] [--key=PUBLIC]
+
+                This command is used to test if you can login to the specified
+                hosts. It executes the hostname command and compares it.
+                It provides a table  with a sucess column
+
+                cms host check "red,red[01-03]"
+
+                    +-------+---------+--------+
+                    | host  | success | stdout |
+                    +-------+---------+--------+
+                    | red   | True    | red    |
+                    | red01 | True    | red01  |
+                    | red02 | True    | red02  |
+                    | red03 | True    | red03  |
+                    +-------+---------+--------+
 
         """
 
@@ -187,13 +212,22 @@ class HostCommand(PluginCommand):
 
         elif arguments.config:
 
-            VERBOSE(arguments)
-
             key = arguments.key or "~/.ssh/id_rsa.pub"
             result = Host.config(hosts=arguments.NAMES,
                         ips=arguments.IPS,
                         username=arguments.user,
                         key=key)
             print (result)
+
+        elif arguments.check:
+
+            key = arguments.key or "~/.ssh/id_rsa.pub"
+            result = Host.check(hosts=arguments.NAMES,
+                                username=arguments.user,
+                                key=key)
+            for entry in result:
+                entry['success'] = entry['stdout'] == entry['host']
+
+            _print(result)
 
         return ""
