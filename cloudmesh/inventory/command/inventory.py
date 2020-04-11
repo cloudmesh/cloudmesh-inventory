@@ -8,6 +8,7 @@ from cloudmesh.configuration.Config import Config
 from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
+from cloudmesh.common.location import Location
 
 
 class InventoryCommand(PluginCommand):
@@ -102,11 +103,6 @@ class InventoryCommand(PluginCommand):
         """
         map_parameters(arguments,
                        "columns")
-
-        #
-        # TODO: fix config reader, use cmd4
-        #
-        filename = Config(config_path="/cloudmesh_inventory.yaml")
 
         sorted_keys = True
         if arguments.info:
