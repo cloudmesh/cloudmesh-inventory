@@ -33,7 +33,7 @@ class HostCommand(PluginCommand):
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
-              host key scatter NAMES FILE
+              host key scatter USERNAME NAMES FILE
 
           This command does some useful things.
 
@@ -73,7 +73,7 @@ class HostCommand(PluginCommand):
 
                     ssh key gather "red[01-10]" keys.txt
 
-              host key scatter HOSTS FILE
+              host key scatter USERNAME HOSTS FILE
 
                 copies all keys from file FILE to authorized_keys on all hosts,
                 but also makes sure that the users ~/.ssh/id_rsa.pub key is in
@@ -83,7 +83,7 @@ class HostCommand(PluginCommand):
                 2) removes all duplicated keys
 
                 Example:
-                    ssh key scatter "red[01-10]"
+                    ssh key scatter pi "red[01-10]" ~/keys.txt
 
               host key scp NAMES FILE
 
@@ -212,7 +212,7 @@ class HostCommand(PluginCommand):
 
             Host.put(hosts=names,
                      source=file,
-                     username="pi",
+                     username=arguments.USERNAME,
                      destination=".ssh/authorized_keys")
 
             #_print(result)
