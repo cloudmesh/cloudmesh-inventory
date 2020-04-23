@@ -14,6 +14,7 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
+from cloudmesh.common.JobSet import JobSet
 
 
 class HostCommand(PluginCommand):
@@ -156,22 +157,27 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.create:
 
-            results = Host.ssh_keygen(
+             Host.ssh_keygen(
                 hosts=arguments.NAMES,
                 username=arguments.user,
                 dryrun=dryrun)
 
-            _print(results)
+            #_print(results)
 
         elif arguments.key and arguments.list:
 
             names = Parameter.expand(arguments.NAMES)
+            jobSet = JobSet("key_list", executor=JobSet.ssh)
+            command="cat .ssh/id_rsa.pub"
+            for host in names:
+                jobSet.add({"name": host, "host": host, "command": command})
+            jobSet.run(parallel=len(names))
 
-            results = Host.ssh(hosts=names,
-                               command='cat .ssh/id_rsa.pub',
-                               username=arguments.user)
+            #results = Host.ssh(hosts=names,
+            #                   command='cat .ssh/id_rsa.pub',
+            #                   username=arguments.user)
 
-            _print(results)
+            jobSet.Print()
 
 
         elif arguments.key and arguments.gather:
@@ -204,11 +210,12 @@ class HostCommand(PluginCommand):
                 Console.error("The file does not exist")
                 return ""
 
-            result = Host.put(hosts=names,
-                              source=file,
-                              destination=".ssh/authorized_keys")
+            Host.put(hosts=names,
+                     source=file,
+                     username="pi",
+                     destination=".ssh/authorized_keys")
 
-            _print(result)
+            #_print(result)
 
         elif arguments.config:
 
