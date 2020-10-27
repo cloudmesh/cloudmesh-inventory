@@ -1,3 +1,8 @@
-include README.md
 include cloudmesh/inventory/etc/inventory.yaml
 include cloudmesh/inventory/etc/cloudmesh_inventory.yaml
+
+include VERSION
+include *.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
