@@ -1,11 +1,11 @@
 # Cloudmesh Inventory
 
 [![Version](https://img.shields.io/pypi/v/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cloudmesh/cloudmesh-inventory/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cloudmesh/cloudmesh-inventory/blob/main/LICENSE)
 [![Python](https://img.shields.io/pypi/pyversions/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
 [![Format](https://img.shields.io/pypi/format/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
 [![Format](https://img.shields.io/pypi/status/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
-[![Travis](https://travis-ci.com/cloudmesh/cloudmesh-inventory.svg?branch=master)](https://travis-ci.com/cloudmesh/cloudmesh-inventory)
+[![Travis](https://travis-ci.com/cloudmesh/cloudmesh-inventory.svg?branch=main)](https://travis-ci.com/cloudmesh/cloudmesh-inventory)
 
 
 ## Instalation and Documentation
