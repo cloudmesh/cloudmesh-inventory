@@ -7,6 +7,38 @@
 [![Format](https://img.shields.io/pypi/status/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
 [![Travis](https://travis-ci.com/cloudmesh/cloudmesh-inventory.svg?branch=main)](https://travis-ci.com/cloudmesh/cloudmesh-inventory)
 
+## Introduction
+
+Often we need a convenient way to manage inventories for Computers and Services. One whay to do this is in databases or flat files, or dedicated services. Cloudmesh Inventory is designed to be at this time super simple and provides a list of computer entries that are used to document if a service is running on it. It uses a very small set of metadata to keep it extremely simple. All attribute values are strings. An example is 
+
+    g001:
+      cluster: gregor
+      comment: test
+      host: g001
+      ip: 127.0.0.1
+      label: g001
+      metadata: None
+      name: g001
+      owners: gvonlasz
+      project: cloudmesh
+      service: compute
+
+We explain our intended use of the attributes next
+
+| --- | ---| 
+|      cluster | gregor
+|      description | a description |
+|      comment | a comment |
+|      host | the unique name of the host |
+|      ip | the ip address |
+|      name | a unique hostname for the entry |
+|      label | a unique label that may include more than the hostname |
+|      metadata | a string in which metadata can be placed |
+|      owners | a list of owners of the machine (comma separated) |
+|      project | a string representiing a project name |
+|      service | a string representing the service |
+
+
 ## CLoudmesh Manual
 
 The manual for cloudmesh can be found at 
