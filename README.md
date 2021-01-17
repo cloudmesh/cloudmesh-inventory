@@ -23,14 +23,14 @@ Often we need a convenient way to manage inventories for Computers and Services.
       project: cloudmesh
       service: compute
 
-We explain our intended use of the attributes next
+We explain our intended use of the attributes next 
 
 | Attribute | Description |
 | --- | ---| 
-|      cluster | gregor
-|      description | a description |
-|      comment | a comment |
-|      host | the unique name of the host |
+|      cluster | The name of the cluster this entry is associated with | 
+|      description | a description | 
+|      comment | a comment | 
+|      host | the unique name of the host | 
 |      ip | the ip address |
 |      name | a unique hostname for the entry |
 |      label | a unique label that may include more than the hostname |
@@ -40,7 +40,7 @@ We explain our intended use of the attributes next
 |      service | a string representing the service |
 
 
-## CLoudmesh Manual
+## Cloudmesh Manual
 
 The manual for cloudmesh can be found at 
 
