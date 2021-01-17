@@ -7,29 +7,17 @@
 [![Format](https://img.shields.io/pypi/status/cloudmesh-inventory.svg)](https://pypi.python.org/pypi/cloudmesh-inventory)
 [![Travis](https://travis-ci.com/cloudmesh/cloudmesh-inventory.svg?branch=main)](https://travis-ci.com/cloudmesh/cloudmesh-inventory)
 
+## CLoudmesh Manual
+
+The manual for cloudmesh can be found at 
+
+* https://cloudmesh.github.io/cloudmesh-manual/
+
+Cloudmesh Inventory, however can also be used as standalone product.
 
 ## Instalation and Documentation
 
-Please note that several packages are available which are pointed to in the
-instalation documentation.
-
-|  | Links |
-|---------------|-------|
-| Documentation | <https://cloudmesh.github.io/cloudmesh-cloud> |
-| Code | <https://github.com/cloudmesh/cloudmesh-inventory> |
-| Instalation Instructions | <https://github.com/cloudmesh/get> |
-
-Sometimes its necessary to maintain a simple inventory. Naturally if you
-know python you can do this with dicts. However to manage a large number
-of items with repeated values its is of advantage to do this from the
-commandline.
-
-We have written such a tool that lets you easily manage the resources in
-a table format.
-
-## Installation
-
-Make sure you have a new version of python and pip. We tested with
+Make sure you have a new version of python and pip. We tested with with versions greater then
 
 * python 3.7.3
 * pip 19.0.3
@@ -45,10 +33,10 @@ $ pip insatll cloudmesh-cmd5
 $ pip insatll cloudmesh-inventory
 ```
 
-
 ### Instalation from source
 
-To install it form source (which is the current method) use:
+As developer we recommend yo use the instalation from source. For this we have a convenient cloudmesh installer program that outomates fetching the source and does the install for you.
+To install it form source use:
 
 
     $ mkdir ~/cm
@@ -59,17 +47,13 @@ To install it form source (which is the current method) use:
     $ cloudmesh-installer install inventory
     
 This will clone a number of repositories in the `cm` directory and
-install them with   `pip` from them.
+install them with  `pip` from them.
 
-Configuration
--------------
+### Configuration
 
 Your inventory will be located at
 
     ~/.cloudmesh/inventory.yaml
-
-You can also change the yaml file by hand, but the cm command is more
-convenient.
 
 An example file will look as follows:
 
@@ -96,14 +80,13 @@ An example file will look as follows:
       project: cloudmesh
       service: compute
 
-BUGS
-----
+## BUGS
 
 If you like to see fetures added or find bugs, please let us know.
 
-Manpage
--------
+## Manpage
 
+```
     Usage:
         inventory add NAMES [--label=LABEL]
                             [--service=SERVICES]
@@ -184,3 +167,5 @@ Manpage
       cm clone x[5-6] from x3
 
           clones the values for x5, x6 from x3
+```
+
