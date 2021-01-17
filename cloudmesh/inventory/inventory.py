@@ -35,7 +35,8 @@ class Inventory(object):
             "ip",
             "project",
             "owners",
-            "comment"]
+            "comment",
+            "description"]
 
         self.entry = {}
         for key in self.order:
