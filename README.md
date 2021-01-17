@@ -25,6 +25,7 @@ Often we need a convenient way to manage inventories for Computers and Services.
 
 We explain our intended use of the attributes next
 
+| Attribute | Description |
 | --- | ---| 
 |      cluster | gregor
 |      description | a description |
