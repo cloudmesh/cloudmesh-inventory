@@ -15,11 +15,9 @@ install:
 	pip install -e .
 
 readme:
-	pip install md_toc -U
-	md_toc -p github README.md
-	python bin/manual-update.py > README-new.md
-	rsync  --checksum --ignore-times README-new.md README.md
-	# rm -f README-new.md
+	cms man readme -p --toc
+	cms man readme -p --tag="MANUAL" inventory
+
 
 source:
 	cd ../cloudmesh.cmd5; make source

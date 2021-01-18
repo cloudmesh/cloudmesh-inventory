@@ -137,7 +137,7 @@ If you like to see fetures added or find bugs, please let us know.
 
 ## Manpage
 
-<!-- MANUAL -->
+<!--MANUAL-->
 ```
     inventory add NAMES [--label=LABEL]
                         [--service=SERVICES]
@@ -201,16 +201,5 @@ Examples:
       clones the values for x5, x6 from x3
 
 ```
-<!-- MANUAL -->
-
-
-
-
-
-
-
-
-
-
-
+<!--MANUAL-->
 
