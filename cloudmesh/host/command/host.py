@@ -12,7 +12,8 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
-
+from cloudmesh.common.util import sudo_writefile, sudo_readfile
+from cloudmesh.common.util import banner
 
 class HostCommand(PluginCommand):
 
@@ -31,6 +32,7 @@ class HostCommand(PluginCommand):
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
+              host tunnel create NAMES [--port=PORT]
 
           This command does some useful things.
 
@@ -40,6 +42,7 @@ class HostCommand(PluginCommand):
           Options:
               --dryrun   shows what would be done but does not execute
               --output=FORMAT  the format of the output
+              --port=PORT starting local port for tunnel assignment
 
           Description:
 
@@ -117,6 +120,15 @@ class HostCommand(PluginCommand):
                     | red03 | True    | red03  |
                     +-------+---------+--------+
 
+              host tunnel create NAMES [--port=PORT]
+
+                This command is used to create a persistent local port
+                forward on the host to permit ssh tunnelling from the wlan to
+                the physical network (eth). This registers an autossh service in
+                systemd with the defualt port starting at 8001.
+
+                Example:
+                    cms host tunnel create red00[1-3]
         """
 
         def _print(results):
@@ -131,7 +143,8 @@ class HostCommand(PluginCommand):
         map_parameters(arguments,
                        'dryrun',
                        'output',
-                       'user')
+                       'user',
+                       'port')
         dryrun = arguments.dryrun
 
         if dryrun:
@@ -227,5 +240,58 @@ class HostCommand(PluginCommand):
                 entry['success'] = entry['stdout'] == entry['host']
 
             _print(result)
+
+        elif arguments.tunnel and arguments.create:
+
+            wlan_ip = Shell.run("hostname -I | awk '{print $2}'").strip()
+            print(f'\nUsing wlan0 IP = {wlan_ip}')
+            hostname = Shell.run("hostname").strip()
+            print(f'Using cluster hostname = {hostname}')
+
+            names = Parameter.expand(arguments.NAMES)
+            port = arguments.port or "8001"
+            ssh_config_output = ""
+
+            for name in names:
+                service_name = f"autossh-{name}.service"
+
+                service_template = "[Unit]\n" \
+                f"Description=AutoSSH tunnel service to {name} on local port " \
+                                   f"{port}\n" \
+                "After=network.target\n\n" \
+                "[Service]\n" \
+                "User=pi\n" \
+                "Group=pi\n" \
+                'Environment="AUTOSSH_GATETIME=0"\n' \
+                'ExecStart=/usr/bin/autossh -M 0 -o "ServerAliveInterval 30" '\
+                                   '-o "ServerAliveCountMax 3" -i ' \
+                                   '/home/pi/.ssh/id_rsa -NL ' \
+                                   f'{wlan_ip}:{port}:localhost:22 p' \
+                                   f'i@{name}\n\n'\
+                "[Install]\n" \
+                "WantedBy=multi-user.target"
+
+                ssh_config_template = f'Host {name}\n' \
+                                      f'     HostName {hostname}.local\n' \
+                                      f'     User pi\n' \
+                                      f'     Port {port}\n\n'
+
+
+                ssh_config_output += ssh_config_template
+                sudo_writefile(f'/etc/systemd/system/{service_name}',
+                               service_template)
+                port = str(int(port) + 1)
+
+            os.system('sudo systemctl daemon-reload')
+            for name in names:
+                servicename = f"autossh-{name}.service"
+                os.system(f'sudo systemctl start {servicename}')
+                os.system(f'sudo systemctl enable {servicename}')
+
+            print('\nTunnels created.\n\nPlease place the following in your '
+                  'remote machine\'s (i.e. laptop) ~/.ssh/config file to '
+                  'alias simple ssh access (i.e. ssh red001).')
+            banner('copy to ~/.ssh/config on remote host (i.e laptop)')
+            print(ssh_config_output)
 
         return ""
