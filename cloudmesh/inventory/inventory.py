@@ -16,7 +16,7 @@ from cloudmesh.common.util import path_expand
 class Inventory(object):
 
     def info(self):
-        self.filename = path_expand("~/.cloudmesh/inventory.yaml")
+        self.filename = path_expand(self.filename)
 
         banner("Configuration")
         Console.ok('Data File: {:}'.format(self.filename))
@@ -106,6 +106,55 @@ class Inventory(object):
             else:
                 print(self.data[key])
 
+class ClusterInventory(Inventory):
+    def __init__(self, filename):
+        
+        self.order = [
+            "name",
+            "type",
+            "tag",
+            "manager",
+            "managerIP",
+            "workers",
+            "keyfile"
+        ]
+        self.filename = path_expand(filename)
+        self.entry = {}
+        self.data = {}
+
+        for key in self.order:
+            if key == "workers" or key == "manager":
+                self.data[key] = {}
+            else:
+                self.data[key] = ""
+
+        if not os.path.exists(self.filename):
+            Path(self.filename).touch()
+            self.save()
+
+        self.read(self.filename)
+
+    def add(self, **kwargs):
+        raise NotImplementedError
+    
+    def set_keyfile(self, keyfile):
+        self.data["keyfile"] = keyfile
+
+    def set_name(self, name):
+        self.data["name"] = name
+
+    def set_manager(self, manager, manager_ip):
+        self.data["manager"] = manager
+        self.data["managerIP"] = manager_ip
+
+    def add_worker(self, worker, worker_ip):
+        self.data["workers"][worker] = worker_ip
+    
+    def set_type(self, os_type):
+        self.data["type"] = os_type
+    
+    def set_tag(self, tag):
+        self.data["tag"] = tag
 
 class CommandSystem(object):
     @classmethod

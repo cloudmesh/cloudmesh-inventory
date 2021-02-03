@@ -3,7 +3,7 @@ from pprint import pprint
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.configuration.Config import Config
-from cloudmesh.inventory.inventory import Inventory
+from cloudmesh.inventory.inventory import Inventory, ClusterInventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.common.location import Location
@@ -25,6 +25,11 @@ class InventoryCommand(PluginCommand):
                                   [--comment=COMMENT]
                                   [--cluster=CLUSTER]
                                   [--ip=IP]
+              inventory create TAG TYPE [--manager=MANAGER]
+                                          [--workers=WORKERS]
+                                          [--ips=IPS]
+                                          [--inventory=INVENTORY]
+                                          [--keyfile=KEYFILE]
               inventory set NAMES ATTRIBUTE to VALUES
               inventory delete NAMES
               inventory clone NAMES from SOURCE
@@ -81,7 +86,12 @@ class InventoryCommand(PluginCommand):
 
         """
         map_parameters(arguments,
-                       "columns")
+                       "columns",
+                       'manager',
+                       'workers',
+                       'ips',
+                       'inventory',
+                       'keyfile')
 
         sorted_keys = True
         if arguments.info:
@@ -129,6 +139,52 @@ class InventoryCommand(PluginCommand):
         #    element['host'] = arguments.NAMES
         #    i.add(**element)
         #    print (i.list(format="table"))
+
+        elif arguments.create:
+            tag = arguments.TAG
+            os_type = arguments.TYPE
+
+            manager = arguments.manager
+            workers = arguments.workers
+            ips = arguments.ips
+            inventory = arguments.inventory
+            keyfile = arguments.keyfile or '~/.ssh/id_rsa.pub'
+
+            if ips is None or ',' not in ips:
+                Console.error("Missing comma delimiter between master IP and worker IPs in --ip")
+                return
+            if manager is None:
+                Console.error("Missing --manager param")
+                return
+            if workers is None:
+                Console.error("Missing --workers param")
+                return
+            if inventory is None:
+                Console.error("Missing --inventory param")
+                return
+
+            manager_ip, worker_ips = ips.split(',')
+            worker_ips = Parameter.expand(worker_ips)
+            worker_hostnames = Parameter.expand(workers)
+
+            if len(worker_ips) != len(worker_hostnames):
+                Console.error("Length of worker IPs does not match length of worker hostnames")
+                return
+
+            i = ClusterInventory(f'~/.cloudmesh/{inventory}')
+            i.read()
+            
+            i.set_type(os_type)
+            i.set_tag(tag)
+            i.set_name(inventory)
+            i.set_manager(manager, manager_ip)
+            i.set_keyfile(keyfile)
+
+            for worker_hostname, worker_ip in zip(worker_hostnames, worker_ips):
+                i.add_worker(worker_hostname, worker_ip)
+
+            i.save()
+            Console.ok(f"Successfuly saved to ~/.cloudmesh/{inventory}")
 
         elif arguments.list:
 
