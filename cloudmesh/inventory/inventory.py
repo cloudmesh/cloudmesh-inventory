@@ -134,7 +134,7 @@ class ClusterInventory(Inventory):
         #    "keyfile",     # ~/.cloudmesh/inventory/cluster/authorized_keys_master
         #    "status"       # inidcates the status: active, inactive, ...
 
-        # order = [
+        # self.order = [
         #        "host",
         #        "name",
         #        "cluster",
@@ -149,7 +149,7 @@ class ClusterInventory(Inventory):
         #        "keyfile",
         #        "status"
         # ]
-        # header = [
+        # self.header = [
         #        "Host",
         #        "Name",
         #        "Cluster",
@@ -276,6 +276,9 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
+        order = order or self.order
+        header = header or self.header
+        print(Printer.write(self.data, order=order, header=header))
 
     def add(self, **kwargs):
         raise NotImplementedError
