@@ -119,6 +119,18 @@ class ClusterInventory(Inventory):
         else:
             self.filename = path_expand(filename)
 
+        #Gregors proposal
+        #    "host",
+        #    "name",
+        #    "cluster",
+        #    "label",
+        #    "service", <- manager or worker
+        #    "services", ["kubernetes"]
+        #    "ip",
+        #    "project",
+        #    "owners",
+        #    "comment",
+        #    "description"
 
         self.order = [
             "name",
