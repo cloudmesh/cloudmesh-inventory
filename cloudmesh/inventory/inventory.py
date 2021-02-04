@@ -114,23 +114,56 @@ class ClusterInventory(Inventory):
         if filename is None:
             variables = Variables()
             self.filename = variables["inventory"] or \
-                            path_expand("~/.cloudmesh/inventory/cluseter.yaml")
+                            path_expand("~/.cloudmesh/inventory/cluster/cluster.yaml")
 
         else:
             self.filename = path_expand(filename)
 
         #Gregors proposal
-        #    "host",
-        #    "name",
-        #    "cluster",
-        #    "label",
-        #    "service", <- manager or worker
-        #    "services", ["kubernetes"]
-        #    "ip",
-        #    "project",
-        #    "owners",
-        #    "comment",
-        #    "description"
+        #    "host",        # red
+        #    "name",        # red
+        #    "cluster",     # cluster
+        #    "label",       # manager
+        #    "service",     # <- manager or worker
+        #    "services",    # ["kubernetes"]
+        #    "ip",          # 10.0.0.1
+        #    "project",     # picluster
+        #    "owners",      # ['gregor', 'richard']
+        #    "comment",     # The manager node
+        #    "description", # The manager for gregors cluster
+        #    "keyfile",     # ~/.cloudmesh/inventory/cluster/authorized_keys_master
+        #    "status"       # inidcates the status: active, inactive, ...
+
+        # order = [
+        #        "host",
+        #        "name",
+        #        "cluster",
+        #        "label",
+        #        "service",
+        #        "services",
+        #        "ip",
+        #        "project",
+        #        "owners",
+        #        # "comment",
+        #        # "description",
+        #        "keyfile",
+        #        "status"
+        # ]
+        # header = [
+        #        "Host",
+        #        "Name",
+        #        "Cluster",
+        #        "Label",
+        #        "Service",
+        #        "Services",
+        #        "IP",
+        #        "Project",
+        #        "Owners",
+        #        # "Comment",
+        #        # "Description",
+        #        "Keyfile",
+        #        "Status"
+        # ]
 
         self.order = [
             "name",
@@ -155,6 +188,94 @@ class ClusterInventory(Inventory):
             self.save()
 
         self.read(self.filename)
+
+    def workers(self):
+        """
+        Returns the list of workers
+
+        :return:
+        :rtype:
+        """
+        raise NotImplementedError
+
+    def manager(self):
+        """
+        Returns the list managers
+
+        :return:
+        :rtype:
+        """
+        raise NotImplementedError
+
+    def find(self, **kwargs):
+        """
+        return the list of items eapal to the arguments set
+
+        :param kwargs:
+        :type kwargs:
+        :return:
+        :rtype:
+        """
+        raise NotImplementedError
+
+    def set(self, name=None, attribute=None, value=None):
+        """
+        sets for the named element the attribute to the value
+        :param name:
+        :type name:
+        :param value:
+        :type value:
+        :return:
+        :rtype:
+        """
+        raise NotImplementedError
+
+    def get(self, name, attribute):
+        """
+        returns the value of the attribute of the named element
+
+        :param name:
+        :type name:
+        :param attribute:
+        :type attribute:
+        :return:
+        :rtype:
+        """
+        return NotImplementedError
+
+    def activate(self, name):
+        """
+        activates a node
+
+        :param name:
+        :type name:
+        :return:
+        :rtype:
+        """
+        return NotImplementedError
+
+    def deactivate(self, name):
+        """
+        activates a node
+
+        :param name:
+        :type name:
+        :return:
+        :rtype:
+        """
+        return NotImplementedError
+
+    def print(self, order=None, header=None, output="table"):
+        """
+        prints the inventory in the output format
+
+        :param order:
+        :type order:
+        :param header:
+        :type header:
+        :return:
+        :rtype:
+        """
 
     def add(self, **kwargs):
         raise NotImplementedError
