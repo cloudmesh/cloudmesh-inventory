@@ -193,19 +193,23 @@ class ClusterInventory(Inventory):
         """
         Returns the list of workers
 
-        :return:
-        :rtype:
+        :return: list of workers
+        :rtype: dict
         """
-        raise NotImplementedError
+        return self.find(service="worker")
 
     def manager(self):
         """
         Returns the list managers
 
-        :return:
-        :rtype:
+        :return: list of menagers. If only one manager it returns an item not a list
+        :rtype: list or single item
         """
-        raise NotImplementedError
+        manager = self.find(service="manager")
+        if len(maneger) == 1:
+            return manager[0]
+        else:
+            return manager
 
     def find(self, **kwargs):
         """
@@ -216,7 +220,16 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        raise NotImplementedError
+        # THIS IS NOT TESTED, JUST DRAFTED
+        # this is wrong as it assumes not a dict but a list
+        found = []
+        for entry in self.data:
+            match = True
+            for t in kwargs:
+                match = match and kwargs[t] == data[t]
+            if match:
+                found.append(entry)
+        return found
 
     def set(self, name=None, attribute=None, value=None):
         """
@@ -241,7 +254,7 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        return NotImplementedError
+        return self.data[name][attribute]
 
     def activate(self, name):
         """
@@ -252,7 +265,7 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        return NotImplementedError
+        self.set(name, attribute="status", value="active")
 
     def deactivate(self, name):
         """
@@ -263,7 +276,7 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        return NotImplementedError
+        self.set(name, attribute="status", value="inactive")
 
     def print(self, order=None, header=None, output="table"):
         """
@@ -281,8 +294,10 @@ class ClusterInventory(Inventory):
         print(Printer.write(self.data, order=order, header=header))
 
     def add(self, **kwargs):
-        raise NotImplementedError
-    
+        for attribute in kwargs:
+            name = kwargs["name"]
+            self.set(name, attribute=attribute, value=kwargs[attribute])
+
     def set_keyfile(self, keyfile):
         self.data["keyfile"] = keyfile
 
