@@ -11,6 +11,7 @@ from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
+from cloudmesh.common.variables import Variables
 
 
 class Inventory(object):
@@ -107,8 +108,18 @@ class Inventory(object):
                 print(self.data[key])
 
 class ClusterInventory(Inventory):
-    def __init__(self, filename):
-        
+
+    def __init__(self, filename=None):
+
+        if filename is None:
+            variables = Variables()
+            self.filename = variables["inventory"] or \
+                            path_expand("~/.cloudmesh/inventory/cluseter.yaml")
+
+        else:
+            self.filename = path_expand(filename)
+
+
         self.order = [
             "name",
             "type",
@@ -118,7 +129,6 @@ class ClusterInventory(Inventory):
             "workers",
             "keyfile"
         ]
-        self.filename = path_expand(filename)
         self.entry = {}
         self.data = {}
 
