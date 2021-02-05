@@ -11,6 +11,10 @@ endef
 
 all: install
 
+
+flake8:
+	flake8 --max-line-length 124 cloudmesh
+
 install:
 	pip install -e .
 
