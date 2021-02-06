@@ -3,7 +3,7 @@ from pprint import pprint
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.configuration.Config import Config
-from cloudmesh.inventory.inventory import Inventory, ClusterInventory
+from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.common.location import Location
@@ -23,18 +23,19 @@ class InventoryCommand(PluginCommand):
                                   [--project=PROJECT]
                                   [--owners=OWNERS]
                                   [--comment=COMMENT]
+                                  [--inventory=INVENTORY]
                                   [--cluster=CLUSTER]
                                   [--ip=IP]
               inventory create TAG TYPE [--manager=MANAGER]
                                           [--workers=WORKERS]
-                                          [--ips=IPS]
+                                          [--ip=IP]
                                           [--inventory=INVENTORY]
                                           [--keyfile=KEYFILE]
-              inventory set NAMES ATTRIBUTE to VALUES
-              inventory delete NAMES
-              inventory clone NAMES from SOURCE
-              inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS]
-              inventory info
+              inventory set NAMES ATTRIBUTE to VALUES [--inventory=INVENTORY]
+              inventory delete NAMES [--inventory=INVENTORY]
+              inventory clone NAMES from SOURCE [--inventory=INVENTORY]
+              inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS] [--inventory=INVENTORY]
+              inventory info [--inventory=INVENTORY]
 
           Arguments:
             NAMES     Name of the resources (example i[10-20])
@@ -89,14 +90,17 @@ class InventoryCommand(PluginCommand):
                        "columns",
                        'manager',
                        'workers',
-                       'ips',
+                       'ip',
                        'inventory',
                        'keyfile')
 
         sorted_keys = True
         if arguments.info:
 
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
             i.info()
 
@@ -105,7 +109,10 @@ class InventoryCommand(PluginCommand):
             hosts = Parameter.expand(arguments.NAMES)
 
             print(hosts)
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
             d = dict(i.data)
             r = {}
@@ -146,12 +153,13 @@ class InventoryCommand(PluginCommand):
 
             manager = arguments.manager
             workers = arguments.workers
-            ips = arguments.ips
+            ips = arguments.ip
             inventory = arguments.inventory
             keyfile = arguments.keyfile or '~/.ssh/id_rsa.pub'
 
             if ips is None or ',' not in ips:
-                Console.error("Missing comma delimiter between master IP and worker IPs in --ip")
+                Console.error(
+                    "Missing comma delimiter between master IP and worker IPs in --ip")
                 return
             if manager is None:
                 Console.error("Missing --manager param")
@@ -168,27 +176,48 @@ class InventoryCommand(PluginCommand):
             worker_hostnames = Parameter.expand(workers)
 
             if len(worker_ips) != len(worker_hostnames):
-                Console.error("Length of worker IPs does not match length of worker hostnames")
+                Console.error(
+                    "Length of worker IPs does not match length of worker hostnames")
                 return
 
-            i = ClusterInventory(f'~/.cloudmesh/{inventory}')
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
-            
-            i.set_type(os_type)
-            i.set_tag(tag)
-            i.set_name(inventory)
-            i.set_manager(manager, manager_ip)
-            i.set_keyfile(keyfile)
+
+            i.add(host=manager,
+                  name=manager,
+                  type=os_type,
+                  tag=tag,
+                  cluster=inventory.split('.')[0],
+                  service='manager',
+                  ip=manager_ip,
+                  keyfile=keyfile,
+                  status="inactive"
+                  )
 
             for worker_hostname, worker_ip in zip(worker_hostnames, worker_ips):
-                i.add_worker(worker_hostname, worker_ip)
+                i.add(host=worker_hostname,
+                  name=worker_hostname,
+                  type=os_type,
+                  tag=tag,
+                  cluster=inventory.split('.')[0],
+                  service='worker',
+                  ip=worker_ip,
+                  keyfile=keyfile,
+                  status="inactive"
+                  )
 
             i.save()
             Console.ok(f"Successfuly saved to ~/.cloudmesh/{inventory}")
 
         elif arguments.list:
 
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
             if arguments["--columns"]:
                 order = arguments["--columns"].split(",")
@@ -209,25 +238,34 @@ class InventoryCommand(PluginCommand):
                 Console.error(
                     "Number of names {:} != number of values{:}".format(
                         len(hosts), len(values)))
-
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
 
             for index in range(0, len(hosts)):
                 host = hosts[index]
                 value = values[index]
 
-                object = {'host': host,
-                          attribute: value}
+                if not i.has_host(host):
+                    i.add(host=host)
 
-                i.add(**object)
+                i.set(host, attribute, value)
+                # object = {'host': host,
+                #           attribute: value}
+
+                # i.add(**object)
 
             print(i.list(format="table"))
 
         elif arguments.add:
 
             hosts = Parameter.expand(arguments.NAMES)
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
             element = {}
 
@@ -239,17 +277,21 @@ class InventoryCommand(PluginCommand):
                 except:
                     pass
             element['host'] = arguments.NAMES
+            print(element)
             i.add(**element)
             print(i.list(format="table"))
 
         elif arguments.delete:
 
             hosts = Parameter.expand(arguments.NAMES)
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
 
             for host in hosts:
-                del i.data[host]
+                i.delete(host)
             i.save()
 
         elif arguments.clone:
@@ -257,7 +299,10 @@ class InventoryCommand(PluginCommand):
             hosts = Parameter.expand(arguments.NAMES)
             source = arguments.SOURCE
 
-            i = Inventory()
+            if arguments.inventory is None:
+                i = Inventory()
+            else:
+                i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
 
             if source in i.data:

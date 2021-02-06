@@ -12,6 +12,7 @@ from cloudmesh.common.console import Console
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
+from cloudmesh.common.parameter import Parameter
 
 
 class Inventory(object):
@@ -25,101 +26,16 @@ class Inventory(object):
         Console.ok('Objects: {:}'.format(len(self.data)))
         print(70 * "#")
 
-    def __init__(self):
-
-        self.order = [
-            "host",
-            "name",
-            "cluster",
-            "label",
-            "service",
-            "ip",
-            "project",
-            "owners",
-            "comment",
-            "description"]
-
-        self.entry = {}
-        for key in self.order:
-            self.entry[key] = ""
-
-        self.data = {}
-
-        self.filename = path_expand("~/.cloudmesh/inventory.yaml")
-        if not os.path.exists(self.filename):
-            source = Path(os.path.dirname(etc.__file__) + "/inventory.yaml")
-            shutil.copyfile(source, self.filename)
-
-        self.read(self.filename)
-
-    def read(self, filename=None):
-        if filename is not None:
-            self.filename = filename
-
-        # if not os.path.isfile(filename):
-        #    self.save(filename)
-        stream = open(self.filename, "r")
-        self.data = yaml.safe_load(stream)
-        stream.close()
-
-    def save(self, filename=None, format="yaml"):
-        if filename is None:
-            filename = self.filename
-        with open(filename, 'w') as yaml_file:
-            yaml_file.write(self.list(format=format))
-
-    def add(self, **kwargs):
-
-        if "host" not in kwargs:
-            Console.error("no id specified")
-            sys.exit(1)
-
-        hosts = hostlist.expand_hostlist(kwargs['host'])
-
-        for host in hosts:
-            if host in self.data:
-                entry = self.data[host]
-            else:
-                entry = dict(self.entry)
-                self.data[host] = entry
-            for key, value in kwargs.items():
-                entry[key] = value
-            entry['host'] = host
-            for attribute in entry:
-                self.data[host][attribute] = entry[attribute]
-        self.save()
-
-    def list(self, format='dict', sort_keys=True, order=None):
-        if order is None:
-            order = self.order
-        header = order
-        return Printer.dict(self.data,
-                            header=header,
-                            order=order,
-                            output=format,
-                            sort_keys=sort_keys)
-
-    def _str(self, data, with_empty=False):
-        print()
-        for key in data:
-            if self.data[key] == '' or self.data[key] is None:
-                pass
-            else:
-                print(self.data[key])
-
-class ClusterInventory(Inventory):
-
     def __init__(self, filename=None):
 
         if filename is None:
             variables = Variables()
             self.filename = variables["inventory"] or \
-                            path_expand("~/.cloudmesh/inventory/cluster/cluster.yaml")
+                            path_expand("~/.cloudmesh/inventory.yaml")
 
         else:
             self.filename = path_expand(filename)
-
-        #Gregors proposal
+        # Gregors proposal
         #    "host",        # red
         #    "name",        # red
         #    "cluster",     # cluster
@@ -134,54 +50,51 @@ class ClusterInventory(Inventory):
         #    "keyfile",     # ~/.cloudmesh/inventory/cluster/authorized_keys_master
         #    "status"       # inidcates the status: active, inactive, ...
 
-        # self.order = [
-        #        "host",
-        #        "name",
-        #        "cluster",
-        #        "label",
-        #        "service",
-        #        "services",
-        #        "ip",
-        #        "project",
-        #        "owners",
-        #        # "comment",
-        #        # "description",
-        #        "keyfile",
-        #        "status"
-        # ]
-        # self.header = [
-        #        "Host",
-        #        "Name",
-        #        "Cluster",
-        #        "Label",
-        #        "Service",
-        #        "Services",
-        #        "IP",
-        #        "Project",
-        #        "Owners",
-        #        # "Comment",
-        #        # "Description",
-        #        "Keyfile",
-        #        "Status"
-        # ]
+        self.header = [
+               "Host",
+               "Name",
+               "Type",
+               "Tag",
+               "Cluster",
+               "Label",
+               "Service",
+               "Services",
+               "IP",
+               "Project",
+               "Owners",
+               "Comment",
+               "Description",
+               "Keyfile",
+               "Status"
+        ]
 
         self.order = [
+            "host",
             "name",
             "type",
             "tag",
-            "manager",
-            "managerIP",
-            "workers",
-            "keyfile"
-        ]
+            "cluster",
+            "label",
+            "service",
+            "services",
+            "ip",
+            "project",
+            "owners",
+            "comment",
+            "description",
+            "keyfile",
+            "status"]
+
         self.entry = {}
+        for key in self.order:
+            self.entry[key] = ""
+
         self.data = {}
 
-        for key in self.order:
-            if key == "workers" or key == "manager":
-                self.data[key] = {}
-            else:
-                self.data[key] = ""
+        # self.filename = path_expand("~/.cloudmesh/inventory.yaml")
+        # if not os.path.exists(self.filename):
+        #     source = Path(os.path.dirname(etc.__file__) + "/inventory.yaml")
+        #     shutil.copyfile(source, self.filename)
 
         if not os.path.exists(self.filename):
             Path(self.filename).touch()
@@ -189,27 +102,16 @@ class ClusterInventory(Inventory):
 
         self.read(self.filename)
 
-    def workers(self):
+    def has_host(self, host):
         """
-        Returns the list of workers
+        return true or false if the host is in the inventory
 
-        :return: list of workers
-        :rtype: dict
+        :param host:
+        :type host: str
+        :return: If host is in specified inventory
+        :rtype: Bool
         """
-        return self.find(service="worker")
-
-    def manager(self):
-        """
-        Returns the list managers
-
-        :return: list of menagers. If only one manager it returns an item not a list
-        :rtype: list or single item
-        """
-        manager = self.find(service="manager")
-        if len(maneger) == 1:
-            return manager[0]
-        else:
-            return manager
+        return host in self.data
 
     def find(self, **kwargs):
         """
@@ -220,18 +122,16 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        # THIS IS NOT TESTED, JUST DRAFTED
-        # this is wrong as it assumes not a dict but a list
         found = []
         for entry in self.data:
             match = True
             for t in kwargs:
-                match = match and kwargs[t] == data[t]
+                match = match and kwargs[t] == self.data[entry][t]
             if match:
-                found.append(entry)
+                found.append(self.data[entry])
         return found
 
-    def set(self, name=None, attribute=None, value=None):
+    def set(self, name, attribute, value):
         """
         sets for the named element the attribute to the value
         :param name:
@@ -239,9 +139,10 @@ class ClusterInventory(Inventory):
         :param value:
         :type value:
         :return:
-        :rtype:
+        :rtype: void
         """
-        raise NotImplementedError
+        self.data[name][attribute] = value
+
 
     def get(self, name, attribute):
         """
@@ -254,7 +155,10 @@ class ClusterInventory(Inventory):
         :return:
         :rtype:
         """
-        return self.data[name][attribute]
+        try:
+            return self.data[name][attribute]
+        except KeyError as e:
+            raise KeyError(f'No such key {name} and/or attribute {attribute}')
 
     def activate(self, name):
         """
@@ -293,29 +197,92 @@ class ClusterInventory(Inventory):
         header = header or self.header
         print(Printer.write(self.data, order=order, header=header))
 
+    def workers(self):
+        """
+        Returns the list of workers
+
+        :return: list of workers
+        :rtype: list
+        """
+        return self.find(service="worker")
+
+    def manager(self):
+        """
+        Returns the list managers
+
+        :return: list of menagers. If only one manager it returns an item not a list
+        :rtype: list or single item
+        """
+        manager = self.find(service="manager")
+        if len(manager) == 1:
+            return manager[0]
+        else:
+            return manager
+
+    def read(self, filename=None):
+        if filename is not None:
+            self.filename = filename
+
+        # if not os.path.isfile(filename):
+        #    self.save(filename)
+        stream = open(self.filename, "r")
+        self.data = yaml.safe_load(stream)
+        stream.close()
+
+    def save(self, filename=None, format="yaml"):
+        if filename is None:
+            filename = self.filename
+        with open(filename, 'w') as yaml_file:
+            yaml_file.write(self.list(format=format))
+
+    def delete(self, name):
+        """
+        Given a hostname, delete it from the inventory
+        """
+        del self.data[name]
+
     def add(self, **kwargs):
-        for attribute in kwargs:
-            name = kwargs["name"]
-            self.set(name, attribute=attribute, value=kwargs[attribute])
 
-    def set_keyfile(self, keyfile):
-        self.data["keyfile"] = keyfile
+        if "host" not in kwargs:
+            Console.error("no id specified")
+            sys.exit(1)
 
-    def set_name(self, name):
-        self.data["name"] = name
+        hosts = hostlist.expand_hostlist(kwargs['host'])
+        if 'ip' in kwargs:
+            ips = Parameter.expand(kwargs['ip'])
+        else:
+            ips = [None for i in hosts]
+        for host, ip in zip(hosts, ips):
+            if host in self.data:
+                entry = self.data[host]
+            else:
+                entry = dict(self.entry)
+                self.data[host] = entry
+            for key, value in kwargs.items():
+                entry[key] = value
+            entry['ip'] = ip
+            entry['host'] = host
+            for attribute in entry:
+                self.data[host][attribute] = entry[attribute]
+        self.save()
 
-    def set_manager(self, manager, manager_ip):
-        self.data["manager"] = manager
-        self.data["managerIP"] = manager_ip
+    def list(self, format='dict', sort_keys=True, order=None):
+        if order is None:
+            order = self.order
+        header = order
+        return Printer.dict(self.data,
+                            header=header,
+                            order=order,
+                            output=format,
+                            sort_keys=sort_keys)
 
-    def add_worker(self, worker, worker_ip):
-        self.data["workers"][worker] = worker_ip
-    
-    def set_type(self, os_type):
-        self.data["type"] = os_type
-    
-    def set_tag(self, tag):
-        self.data["tag"] = tag
+    def _str(self, data, with_empty=False):
+        print()
+        for key in data:
+            if self.data[key] == '' or self.data[key] is None:
+                pass
+            else:
+                print(self.data[key])
 
 class CommandSystem(object):
     @classmethod
