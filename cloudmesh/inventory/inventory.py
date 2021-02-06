@@ -48,22 +48,22 @@ class Inventory(object):
         #    "keyfile",     # ~/.cloudmesh/inventory/cluster/authorized_keys_master
         #    "status"       # inidcates the status: active, inactive, ...
 
-        self.header = ["Host",
-                       "Name",
-                       "Type",
-                       "Tag",
-                       "Cluster",
-                       "Label",
-                       "Service",
-                       "Services",
-                       "IP",
-                       "Project",
-                       "Owners",
-                       "Comment",
-                       "Description",
-                       "Keyfile",
-                       "Status"
-                       ]  # noqa: E126
+        self.header = [
+            "Host",
+            "Name",
+            "Type",
+            "Tag",
+            "Cluster",
+            "Label",
+            "Service",
+            "Services",
+            "IP",
+            "Project",
+            "Owners",
+            "Comment",
+            "Description",
+            "Keyfile",
+            "Status"]
 
         self.order = [
             "host",

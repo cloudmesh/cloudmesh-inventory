@@ -4,21 +4,18 @@
 # pytest -v tests/test_host.py
 ###############################################################
 
+import os
+import sys
 from pprint import pprint
 
-from cloudmesh.common.Printer import Printer
+import pytest
+from cloudmesh.common.Host import Host as CommonHost
+from cloudmesh.common.console import Console
+from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.host.host import Host
-from cloudmesh.common.Host import Host as CommonHost
-from cloudmesh.common.parameter import Parameter
-from cloudmesh.common.console import Console
-import pytest
-import sys
-import shutil
-import os
-import time
 
 config_hosts = """
 
@@ -107,5 +104,5 @@ class Test_host:
             try:
                 os.remove(filename)
                 os.remove(f"{filename}.pub")
-            except Exception as e:
+            except Exception as e:  # noqa: F841
                 pass

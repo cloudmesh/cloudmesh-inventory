@@ -13,7 +13,8 @@ all: install
 
 
 flake8:
-	flake8 --max-line-length 124 cloudmesh
+	flake8 --max-line-length 124 --ignore=E722 cloudmesh
+	flake8 --max-line-length 124 --ignore=E722 tests
 
 install:
 	pip install -e .

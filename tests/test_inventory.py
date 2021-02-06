@@ -4,13 +4,10 @@
 # pytest -v tests/test_inventory.py
 ###############################################################
 
-from pprint import pprint
-
-from cloudmesh.common.Printer import Printer
+import pytest
 from cloudmesh.common.util import HEADING
 from cloudmesh.common.util import banner
 from cloudmesh.inventory.inventory import Inventory
-import pytest
 
 
 @pytest.mark.incremental
@@ -58,6 +55,6 @@ cms inventory list
 cms inventory help
 cms help inventory
 cms inventory list d[1-3]
-cms inventory list 
+cms inventory list
 cms inventory add d[1-3] --project=openstack
 """
