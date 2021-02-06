@@ -55,19 +55,18 @@ class Test_host:
 
         except Exception as e:
             Console.error("Make sure you have the following in your ~/.ssh/config")
-            print (config_hosts)
+            print(config_hosts)
             Console.error(
                 "Make sure you have the ssh remote login enabled")
-            print (e)
+            print(e)
             Console.error("Your computer is not properly set up to do the test")
             sys.exit()
-
 
     def test_ssh_config(self):
         HEADING()
 
         results = CommonHost.ssh(hosts="red[01-03]", command="uname")
-        pprint (results)
+        pprint(results)
 
         for result in results:
             assert result.stdout.strip().lower() == sys.platform
@@ -82,11 +81,11 @@ class Test_host:
                 hosts=host,
                 filename=f"~/.ssh/id_rsa_{host}",
                 dryrun=False)
-            #time.sleep(1)
+            # time.sleep(1)
             banner("result", c="-")
-            pprint (result)
+            pprint(result)
 
-            #assert len(result[0]) > 1
+            # assert len(result[0]) > 1
 
     def test_gather_keys(self):
         HEADING()
@@ -103,10 +102,10 @@ class Test_host:
         hosts = Parameter.expand("red[01-03],tmp")
 
         for host in hosts:
-            filename=path_expand(f"~/.ssh/id_rsa_{host}")
-            print (f"rm {filename} {filename}.pub ")
+            filename = path_expand(f"~/.ssh/id_rsa_{host}")
+            print(f"rm {filename} {filename}.pub ")
             try:
                 os.remove(filename)
                 os.remove(f"{filename}.pub")
-            except:
+            except Exception as e:
                 pass
