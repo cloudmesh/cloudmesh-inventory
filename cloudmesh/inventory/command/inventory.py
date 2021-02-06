@@ -2,11 +2,9 @@ from pprint import pprint
 
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
-from cloudmesh.configuration.Config import Config
 from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
-from cloudmesh.common.location import Location
 
 
 class InventoryCommand(PluginCommand):
@@ -94,7 +92,6 @@ class InventoryCommand(PluginCommand):
                        'inventory',
                        'keyfile')
 
-        sorted_keys = True
         if arguments.info:
 
             if arguments.inventory is None:
@@ -199,15 +196,15 @@ class InventoryCommand(PluginCommand):
 
             for worker_hostname, worker_ip in zip(worker_hostnames, worker_ips):
                 i.add(host=worker_hostname,
-                  name=worker_hostname,
-                  type=os_type,
-                  tag=tag,
-                  cluster=inventory.split('.')[0],
-                  service='worker',
-                  ip=worker_ip,
-                  keyfile=keyfile,
-                  status="inactive"
-                  )
+                      name=worker_hostname,
+                      type=os_type,
+                      tag=tag,
+                      cluster=inventory.split('.')[0],
+                      service='worker',
+                      ip=worker_ip,
+                      keyfile=keyfile,
+                      status="inactive"
+                )  # noqa: E124
 
             i.save()
             Console.ok(f"Successfuly saved to ~/.cloudmesh/{inventory}")
@@ -274,7 +271,7 @@ class InventoryCommand(PluginCommand):
                     value = arguments["--" + attribute]
                     if value is not None:
                         element[attribute] = value
-                except Exception as e:
+                except Exception as e:  # noqa: F841
                     pass
             element['host'] = arguments.NAMES
             print(element)

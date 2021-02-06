@@ -7,13 +7,13 @@ from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
 from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
+from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
+from cloudmesh.common.util import sudo_writefile
 # from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
-from cloudmesh.common.util import sudo_writefile, sudo_readfile
-from cloudmesh.common.util import banner
 
 
 class HostCommand(PluginCommand):
@@ -155,7 +155,7 @@ class HostCommand(PluginCommand):
 
             destinations = Parameter.expand(arguments.DESTINATION)
             source = arguments.SOURCE
-            results_key = Host.scp(source, destinations, output="lines")
+            results_key = Host.scp(source, destinations, output="lines")  # noqa: F841
 
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)

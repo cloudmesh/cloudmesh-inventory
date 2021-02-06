@@ -19,5 +19,7 @@ install:
   - cms help
   - cms help inventory
 
-script: pytest -v tests/test_inventory.py
+script:
+  - flake8 --max-line-length 124 cloudmesh
+  - pytest -v tests/test_inventory.py
 

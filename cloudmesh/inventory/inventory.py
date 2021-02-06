@@ -1,18 +1,16 @@
 import os.path
-import shutil
 import sys
 from pathlib import Path
 
-import cloudmesh.inventory.etc as etc
 import hostlist
 import yaml
 from cloudmesh.common.Printer import Printer
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
+from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.variables import Variables
-from cloudmesh.common.parameter import Parameter
 
 
 class Inventory(object):
@@ -30,8 +28,8 @@ class Inventory(object):
 
         if filename is None:
             variables = Variables()
-            self.filename = variables["inventory"] or \
-                            path_expand("~/.cloudmesh/inventory.yaml")
+            self.filename = \
+                variables["inventory"] or path_expand("~/.cloudmesh/inventory.yaml")
 
         else:
             self.filename = path_expand(filename)
@@ -143,7 +141,6 @@ class Inventory(object):
         """
         self.data[name][attribute] = value
 
-
     def get(self, name, attribute):
         """
         returns the value of the attribute of the named element
@@ -157,7 +154,7 @@ class Inventory(object):
         """
         try:
             return self.data[name][attribute]
-        except KeyError as e:
+        except KeyError as e:  # noqa: F841
             raise KeyError(f'No such key {name} and/or attribute {attribute}')
 
     def activate(self, name):
@@ -284,13 +281,14 @@ class Inventory(object):
             else:
                 print(self.data[key])
 
+
 class CommandSystem(object):
     @classmethod
     def status(cls, host):
         msg = "Unknown host"
         try:
             msg = Shell.ping("-c", "1", host)
-        except:
+        except Exception as e:  # noqa: F841
             pass
         if "1 packets transmitted, 1 packets received" in msg:
             return True
