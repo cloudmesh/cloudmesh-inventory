@@ -15,6 +15,7 @@ from cloudmesh.shell.command import map_parameters
 from cloudmesh.common.util import sudo_writefile, sudo_readfile
 from cloudmesh.common.util import banner
 
+
 class HostCommand(PluginCommand):
 
     # noinspection PyUnusedLocal
@@ -184,7 +185,6 @@ class HostCommand(PluginCommand):
 
             _print(results)
 
-
         elif arguments.key and arguments.gather:
 
             output = Host.gather_keys(
@@ -205,7 +205,6 @@ class HostCommand(PluginCommand):
             else:
                 print(output)
 
-
         elif arguments.key and arguments.scatter:
 
             names = arguments.NAMES
@@ -225,10 +224,10 @@ class HostCommand(PluginCommand):
 
             key = arguments.key or "~/.ssh/id_rsa.pub"
             result = Host.config(hosts=arguments.NAMES,
-                        ips=arguments.IPS,
-                        username=arguments.user,
-                        key=key)
-            print (result)
+                                 ips=arguments.IPS,
+                                 username=arguments.user,
+                                 key=key)
+            print(result)
 
         elif arguments.check:
 
@@ -256,26 +255,25 @@ class HostCommand(PluginCommand):
                 service_name = f"autossh-{name}.service"
 
                 service_template = "[Unit]\n" \
-                f"Description=AutoSSH tunnel service to {name} on local port " \
+                                   f"Description=AutoSSH tunnel service to {name} on local port " \
                                    f"{port}\n" \
-                "After=network.target\n\n" \
-                "[Service]\n" \
-                "User=pi\n" \
-                "Group=pi\n" \
-                'Environment="AUTOSSH_GATETIME=0"\n' \
-                'ExecStart=/usr/bin/autossh -M 0 -o "ServerAliveInterval 30" '\
+                                   "After=network.target\n\n" \
+                                   "[Service]\n" \
+                                   "User=pi\n" \
+                                   "Group=pi\n" \
+                                   'Environment="AUTOSSH_GATETIME=0"\n' \
+                                   'ExecStart=/usr/bin/autossh -M 0 -o "ServerAliveInterval 30" ' \
                                    '-o "ServerAliveCountMax 3" -i ' \
                                    '/home/pi/.ssh/id_rsa -NL ' \
                                    f'{wlan_ip}:{port}:localhost:22 p' \
-                                   f'i@{name}\n\n'\
-                "[Install]\n" \
-                "WantedBy=multi-user.target"
+                                   f'i@{name}\n\n' \
+                                   "[Install]\n" \
+                                   "WantedBy=multi-user.target"
 
                 ssh_config_template = f'Host {name}\n' \
                                       f'     HostName {hostname}.local\n' \
                                       f'     User pi\n' \
                                       f'     Port {port}\n\n'
-
 
                 ssh_config_output += ssh_config_template
                 sudo_writefile(f'/etc/systemd/system/{service_name}',

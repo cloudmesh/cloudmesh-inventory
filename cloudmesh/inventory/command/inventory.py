@@ -274,7 +274,7 @@ class InventoryCommand(PluginCommand):
                     value = arguments["--" + attribute]
                     if value is not None:
                         element[attribute] = value
-                except:
+                except Exception as e:
                     pass
             element['host'] = arguments.NAMES
             print(element)
