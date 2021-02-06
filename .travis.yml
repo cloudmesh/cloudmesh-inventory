@@ -12,6 +12,7 @@ python:
 install:
   - pwd
   - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
   - pip install .
   - mkdir -p ~/.cloudmesh
   - wget -P ~/.cloudmesh https://raw.githubusercontent.com/cloudmesh/cloudmesh-configuration/main/cloudmesh/configuration/etc/cloudmesh.yaml
