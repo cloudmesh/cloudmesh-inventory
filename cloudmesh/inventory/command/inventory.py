@@ -30,6 +30,7 @@ class InventoryCommand(PluginCommand):
                                           [--inventory=INVENTORY]
                                           [--keyfile=KEYFILE]
               inventory set NAMES ATTRIBUTE to VALUES [--inventory=INVENTORY]
+              [--listvalue]
               inventory delete NAMES [--inventory=INVENTORY]
               inventory clone NAMES from SOURCE [--inventory=INVENTORY]
               inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS] [--inventory=INVENTORY]
@@ -76,9 +77,13 @@ class InventoryCommand(PluginCommand):
                 sets for the resources x3, x4 the value of the
                 temperature to 32
 
-            cms inventory set x[7-8] ip 128.0.0.[0-1]
+            cms inventory set x[7-8] ip to 128.0.0.[0-1]
                 sets the value of x7 to 128.0.0.0
                 sets the value of x8 to 128.0.0.1
+
+            cms inventory set x1 services to bridge,kubernetes --listvalue
+                sets the value of x1 to [bridge, kubernetes]
+                The --listvalue option indicates the value set is a list
 
             cms inventory clone x[5-6] from x3
                 clones the values for x5, x6 from x3
@@ -90,7 +95,8 @@ class InventoryCommand(PluginCommand):
                        'workers',
                        'ip',
                        'inventory',
-                       'keyfile')
+                       'keyfile',
+                       'listvalue')
 
         if arguments.info:
 
@@ -228,10 +234,8 @@ class InventoryCommand(PluginCommand):
             values = Parameter.expand(arguments.VALUES)
             if len(values) == 1:
                 values = values * len(hosts)
-            print(hosts)
-            print(values)
             attribute = arguments.ATTRIBUTE
-            if len(hosts) != len(values):
+            if not arguments.listvalue and len(hosts) != len(values):
                 Console.error(
                     "Number of names {:} != number of values{:}".format(
                         len(hosts), len(values)))
@@ -243,7 +247,7 @@ class InventoryCommand(PluginCommand):
 
             for index in range(0, len(hosts)):
                 host = hosts[index]
-                value = values[index]
+                value = values if arguments.listvalue else values[index]
 
                 if not i.has_host(host):
                     i.add(host=host)
