@@ -260,7 +260,6 @@ class Inventory(object):
             entry['host'] = host
             for attribute in entry:
                 self.data[host][attribute] = entry[attribute]
-        self.save()
 
     def list(self, format='dict', sort_keys=True, order=None):
         if order is None:
