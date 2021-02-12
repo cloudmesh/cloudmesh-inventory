@@ -21,7 +21,7 @@ install:
 
 readme:
 	cms man readme -p --toc
-	cms man readme -p --tag="MANUAL" inventory
+	cms man readme -p --tag="MANUAL" --command=inventory
 
 
 source:
