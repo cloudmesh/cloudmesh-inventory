@@ -14,38 +14,53 @@ from cloudmesh.inventory.inventory import Inventory
 class Test_inventory:
 
     def setup(self):
-        self.i = Inventory()
-        banner("Info")
+        self.i = Inventory('~/.cloudmesh/test.yaml')
         self.i.info()
+    
+    def test_add(self):
+        HEADING(txt="cms inventory add")
+        cluster = "test_cluster"
+        label = "test{j}"
+        host = "red00{j}"
+        ip = "10.1.1.{j}"
 
-    def test_inventory(self):
-        HEADING()
+        # Adding one by one
+        for j in range(1, 4):
+            self.i.add(host=host.format(j=j), cluster=cluster, label=label.format(j=j), ip=ip.format(j=j))
 
-        for output in ['dict', 'yaml', 'csv', 'table']:
-            banner(output)
-            print(self.i.list(format=output))
+        for j in range(1, 4):
+            host_name = host.format(j=j)
+            assert self.i.has_host(host_name)
+            entry = self.i.data[host_name]
+            assert entry['cluster'] == cluster
+            assert entry['ip'] == ip.format(j=j)
+            assert entry['label'] == label.format(j=j)
 
-        banner("changing values")
-        self.i.add(host="i1", cluster="india", label="india")
-        self.i.add(host="i2", cluster="india", label="gregor")
-        self.i.add(host="d[1-4]", cluster="delta", label="delta")
+        # Multi add
+        self.i.add(host=host.format(j='[4-7]'), cluster=cluster, ip=ip.format(j='[4-7]'))
 
-        banner("saving")
+        for j in range(4, 8):
+            host_name = host.format(j=j)
+            assert self.i.has_host(host_name)
+            entry = self.i.data[host_name]
+            assert entry['cluster'] == cluster
+            assert entry['ip'] == ip.format(j=j)
+
         self.i.save()
 
-        for output in ['dict', 'yaml', 'csv', 'table']:
+
+    def test_list(self):
+        HEADING(txt="cms inventory list")
+
+        # for output in ['dict', 'yaml', 'csv', 'table']: # bug in 'csv' print in cloudmesh-common
+        for output in ['dict', 'yaml', 'table']:
             banner(output)
             print(self.i.list(format=output))
 
-        banner("reading")
-        n = Inventory()
-        n.read()
+        t = str(self.i.list('table'))
 
-        t = n.list('table')
-        print(t)
-
-        assert "gregor" in str(t)
-        assert "+" in str(t)
+        for order in self.i.order:
+            assert order in t
 
 
 """

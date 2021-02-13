@@ -281,6 +281,7 @@ class InventoryCommand(PluginCommand):
             element['host'] = arguments.NAMES
             print(element)
             i.add(**element)
+            i.save()
             print(i.list(format="table"))
 
         elif arguments.delete:
