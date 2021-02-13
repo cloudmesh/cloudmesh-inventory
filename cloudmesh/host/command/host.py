@@ -164,7 +164,7 @@ class HostCommand(PluginCommand):
 
             if not arguments.eth and arguments.wlan:
                 arguments.eth = True
-                arguments.wlan =True
+                arguments.wlan = True
 
             eth = 'cat /sys/class/net/eth0/address'
             wlan = 'cat /sys/class/net/wlan0/address'
@@ -178,7 +178,6 @@ class HostCommand(PluginCommand):
                 command.append(wlan)
 
             command = ' ; '.join(command)
-
 
             results = Host.ssh(hosts=names,
                                command=f'"{command}"',
