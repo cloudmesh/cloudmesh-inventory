@@ -187,6 +187,7 @@ class HostCommand(PluginCommand):
             # results = Host.ssh(hosts=names,
             #                    command=eth0,
             #                    username=arguments.user)
+            #  _print(results)
 
             # results = Host.ssh(hosts=names,
             #                    command=wlan0,
