@@ -181,7 +181,7 @@ class HostCommand(PluginCommand):
 
 
             results = Host.ssh(hosts=names,
-                               command='"{command}"',
+                               command=f'"{command}"',
                                username=arguments.user)
 
             # results = Host.ssh(hosts=names,
