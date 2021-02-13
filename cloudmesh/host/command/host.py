@@ -161,7 +161,8 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
 
             results = Host.ssh(hosts=names,
-                               command='cat .ssh/id_rsa.pub',
+                               command='cat /sys/class/net/eth0/address; '
+                                       'cat /sys/class/net/wlan0/address',
                                username=arguments.user)
 
             _print(results)
