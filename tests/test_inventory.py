@@ -62,7 +62,9 @@ class Test_inventory:
         for order in self.i.order:
             assert order in t
 
-
+    def test_find(self):
+        HEADING()
+        assert len(self.i.find(host="red002")) > 0
 """
 # We need nostest for this
 
