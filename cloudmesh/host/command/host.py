@@ -34,6 +34,7 @@ class HostCommand(PluginCommand):
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
               host tunnel create NAMES [--port=PORT]
+              host mac NAMES
 
           This command does some useful things.
 
@@ -130,6 +131,10 @@ class HostCommand(PluginCommand):
 
                 Example:
                     cms host tunnel create red00[1-3]
+
+              host mac NAMES
+
+                returns the list of mac addresses of the named pis.
         """
 
         def _print(results):
@@ -151,7 +156,17 @@ class HostCommand(PluginCommand):
         if dryrun:
             VERBOSE(arguments)
 
-        if arguments.scp and not arguments.key:
+        if arguments.mac:
+
+            names = Parameter.expand(arguments.NAMES)
+
+            results = Host.ssh(hosts=names,
+                               command='cat .ssh/id_rsa.pub',
+                               username=arguments.user)
+
+            _print(results)
+
+        elif arguments.scp and not arguments.key:
 
             destinations = Parameter.expand(arguments.DESTINATION)
             source = arguments.SOURCE
