@@ -34,7 +34,7 @@ class HostCommand(PluginCommand):
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
               host tunnel create NAMES [--port=PORT]
-              host mac NAMES
+              host mac NAMES [--eth] [--wlan]
 
           This command does some useful things.
 
@@ -147,6 +147,8 @@ class HostCommand(PluginCommand):
                 pprint(results)
 
         map_parameters(arguments,
+                       'eth',
+                       'wlan'
                        'dryrun',
                        'output',
                        'user',
@@ -160,9 +162,26 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
 
+            if not arguments.eth and arguments.wlan:
+                arguments.eth = True
+                arguments.wlan =True
+
+            eth = 'cat /sys/class/net/eth0/address'
+            wlan = 'cat /sys/class/net/wlan0/address'
+
+            command = []
+
+            if arguments.eth:
+                command.append(eth)
+
+            if arguments.wlan:
+                command.append(wlan)
+
+            command = ' ; '.joun(command)
+
+
             results = Host.ssh(hosts=names,
-                               command='cat /sys/class/net/eth0/address; '
-                                       'cat /sys/class/net/wlan0/address',
+                               command=command,
                                username=arguments.user)
 
             _print(results)
