@@ -169,32 +169,20 @@ class HostCommand(PluginCommand):
 
             eth = 'cat /sys/class/net/eth0/address'
             wlan = 'cat /sys/class/net/wlan0/address'
-
-            command = []
-
             if arguments.eth:
-                command.append(eth)
+                results = Host.ssh(hosts=names,
+                                    command=eth,
+                                    username=arguments.user)
+                print("eth0:")
+                _print(results)
 
             if arguments.wlan:
-                command.append(wlan)
 
-            command = ' ; '.join(command)
-
-            #results = Host.ssh(hosts=names,
-            #                   command=f'({command})',
-            #                   username=arguments.user)
-
-            results = Host.ssh(hosts=names,
-                                command=eth,
-                                username=arguments.user)
-            print("eth0:")
-            _print(results)
-
-            results = Host.ssh(hosts=names,
-                                command=wlan,
-                                username=arguments.user)
-            print("wlan0:")
-            _print(results)
+                results = Host.ssh(hosts=names,
+                                    command=wlan,
+                                    username=arguments.user)
+                print("wlan0:")
+                _print(results)
 
         elif arguments.scp and not arguments.key:
 
