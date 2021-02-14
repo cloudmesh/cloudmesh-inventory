@@ -140,7 +140,7 @@ class HostCommand(PluginCommand):
         def _print(results):
             arguments.output = arguments.output or 'table'
 
-            if arguments.output in  ['table', 'json', 'yaml']:
+            if arguments.output in ['table', 'yaml']:
                 print(Printer.write(results,
                                     order=['host', 'success', 'stdout'],
                                     output=arguments.output))
