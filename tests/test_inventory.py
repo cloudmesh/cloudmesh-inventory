@@ -23,10 +23,11 @@ class Test_inventory:
         label = "test{j}"
         host = "red00{j}"
         ip = "10.1.1.{j}"
+        dns = "8.8.8.8"
 
         # Adding one by one
         for j in range(1, 4):
-            self.i.add(host=host.format(j=j), cluster=cluster, label=label.format(j=j), ip=ip.format(j=j))
+            self.i.add(host=host.format(j=j), cluster=cluster, dns=dns, label=label.format(j=j), ip=ip.format(j=j),)
 
         for j in range(1, 4):
             host_name = host.format(j=j)
@@ -35,6 +36,7 @@ class Test_inventory:
             assert entry['cluster'] == cluster
             assert entry['ip'] == ip.format(j=j)
             assert entry['label'] == label.format(j=j)
+            assert entry['dns'] == dns
 
         # Multi add
         self.i.add(host=host.format(j='[4-7]'), cluster=cluster, ip=ip.format(j='[4-7]'))
