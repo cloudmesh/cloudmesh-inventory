@@ -34,7 +34,7 @@ class HostCommand(PluginCommand):
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
               host tunnel create NAMES [--port=PORT]
-              host mac NAMES [--eth] [--wlan]
+              host mac NAMES [--eth] [--wlan] [--output=FORMAT]
 
           This command does some useful things.
 
@@ -140,9 +140,10 @@ class HostCommand(PluginCommand):
         def _print(results):
             arguments.output = arguments.output or 'table'
 
-            if arguments.output == 'table':
+            if arguments.output in  ['table', 'json', 'yaml']:
                 print(Printer.write(results,
-                                    order=['host', 'success', 'stdout']))
+                                    order=['host', 'success', 'stdout'],
+                                    output=arguments.output))
             else:
                 pprint(results)
 
