@@ -163,7 +163,7 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
 
-            if not arguments.eth and arguments.wlan:
+            if not arguments.eth and not arguments.wlan:
                 arguments.eth = True
                 arguments.wlan = True
 
