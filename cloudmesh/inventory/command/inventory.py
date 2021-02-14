@@ -17,13 +17,16 @@ class InventoryCommand(PluginCommand):
 
           Usage:
               inventory add NAMES [--label=LABEL]
-                                  [--service=SERVICES]
+                                  [--services=SERVICES]
                                   [--project=PROJECT]
                                   [--owners=OWNERS]
                                   [--comment=COMMENT]
                                   [--inventory=INVENTORY]
                                   [--cluster=CLUSTER]
                                   [--ip=IP]
+                                  [--service=SERVICE]
+                                  [--tag=TAG]
+                                  [--keyfile=KEYFILE]
               inventory create TAG [--manager=MANAGER]
                                           [--workers=WORKERS]
                                           [--ip=IP]
@@ -49,6 +52,7 @@ class InventoryCommand(PluginCommand):
 
           Options:
              -v       verbose mode
+             --keyfile=KEYFILE      Keyfile to assign [default: ~/.ssh/id_rsa.pub]
 
           Description:
 
@@ -276,7 +280,8 @@ class InventoryCommand(PluginCommand):
                 except Exception as e:  # noqa: F841
                     pass
             element['host'] = arguments.NAMES
-            print(element)
+            element['status'] = 'inactive'
+            element['name'] = arguments.NAMES
             i.add(**element)
             i.save()
             print(i.list(format="table"))
