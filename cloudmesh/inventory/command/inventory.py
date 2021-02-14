@@ -24,7 +24,7 @@ class InventoryCommand(PluginCommand):
                                   [--inventory=INVENTORY]
                                   [--cluster=CLUSTER]
                                   [--ip=IP]
-              inventory create TAG TYPE [--manager=MANAGER]
+              inventory create TAG [--manager=MANAGER]
                                           [--workers=WORKERS]
                                           [--ip=IP]
                                           [--inventory=INVENTORY]
@@ -152,7 +152,6 @@ class InventoryCommand(PluginCommand):
 
         elif arguments.create:
             tag = arguments.TAG
-            os_type = arguments.TYPE
 
             manager = arguments.manager
             workers = arguments.workers
@@ -191,7 +190,6 @@ class InventoryCommand(PluginCommand):
 
             i.add(host=manager,
                   name=manager,
-                  type=os_type,
                   tag=tag,
                   cluster=inventory.split('.')[0],
                   service='manager',
@@ -203,7 +201,6 @@ class InventoryCommand(PluginCommand):
             for worker_hostname, worker_ip in zip(worker_hostnames, worker_ips):
                 i.add(host=worker_hostname,
                       name=worker_hostname,
-                      type=os_type,
                       tag=tag,
                       cluster=inventory.split('.')[0],
                       service='worker',

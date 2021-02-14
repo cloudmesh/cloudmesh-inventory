@@ -61,6 +61,13 @@ class Test_inventory:
 
         for order in self.i.order:
             assert order in t
+    
+    def test_set(self):
+        HEADING()
+
+        self.i.set("red002", "service", "worker")
+        assert self.i.get("red002", "service") == "worker"
+        self.i.save()
 
     def test_find(self):
         HEADING()
