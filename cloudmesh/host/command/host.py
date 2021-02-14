@@ -177,7 +177,7 @@ class HostCommand(PluginCommand):
             if arguments.wlan:
                 command.append(wlan)
 
-            command = '; '.join(command)
+            command = ' ; '.join(command)
 
             #results = Host.ssh(hosts=names,
             #                   command=f'({command})',
