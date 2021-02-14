@@ -177,21 +177,22 @@ class HostCommand(PluginCommand):
             if arguments.wlan:
                 command.append(wlan)
 
-            command = ' ; '.join(command)
+            command = '; '.join(command)
+
+            #results = Host.ssh(hosts=names,
+            #                   command=f'({command})',
+            #                   username=arguments.user)
 
             results = Host.ssh(hosts=names,
-                               command=f"{command}",
-                               username=arguments.user)
+                                command=eth,
+                                username=arguments.user)
+            print("eth0:")
+            _print(results)
 
-            # results = Host.ssh(hosts=names,
-            #                    command=eth0,
-            #                    username=arguments.user)
-            #  _print(results)
-
-            # results = Host.ssh(hosts=names,
-            #                    command=wlan0,
-            #                    username=arguments.user)
-
+            results = Host.ssh(hosts=names,
+                                command=wlan,
+                                username=arguments.user)
+            print("wlan0:")
             _print(results)
 
         elif arguments.scp and not arguments.key:
