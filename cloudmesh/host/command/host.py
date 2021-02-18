@@ -198,7 +198,7 @@ class HostCommand(PluginCommand):
         elif arguments.setup:
 
             names = Parameter.expand(arguments.WORKERS)
-            HostCreate.setup(names=names, laptop=arguments.LAPTOP)
+            HostCreate.setup(workers=names, laptop=arguments.LAPTOP)
 
         elif arguments.scp and not arguments.key:
 
