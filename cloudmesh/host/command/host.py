@@ -35,6 +35,7 @@ class HostCommand(PluginCommand):
               host key scatter NAMES FILE
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
+              host setup WORKERS [LAPTOP]
 
           This command does some useful things.
 
@@ -135,6 +136,17 @@ class HostCommand(PluginCommand):
               host mac NAMES
 
                 returns the list of mac addresses of the named pis.
+
+              host setup WORKERS [LAPTOP]
+
+                Executes the following steps
+
+                    cms bridge create --interface='wlan0'
+                    cms host key create red00[1-3]
+                    cms host key gather red00[1-3],you@yourlaptop.local keys.txt
+                    cms host key scatter red00[1-3],localhost keys.txt
+                    rm keys.txt
+                    cms host tunnel create red00[1-3]
         """
 
         def _print(results):
@@ -183,6 +195,11 @@ class HostCommand(PluginCommand):
                                     username=arguments.user)
                 print("wlan0:")
                 _print(results)
+
+        elif arguments.setup:
+
+            names = Parameter.expand(arguments.WORKERS)
+            Host.setup(names=names, laptop=arguments.LAPTOP)
 
         elif arguments.scp and not arguments.key:
 
