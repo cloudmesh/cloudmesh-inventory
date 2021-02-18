@@ -1,3 +1,6 @@
+import os
+from cloudmesh.common.console import Console
+
 class HostCreate:
 
     @staticmethod
