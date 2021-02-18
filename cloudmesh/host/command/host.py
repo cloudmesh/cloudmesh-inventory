@@ -10,11 +10,10 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import sudo_writefile
-# from cloudmesh.host.host import Host
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
-
+from cloudmesh.host.HostCreate import HostCreate
 
 class HostCommand(PluginCommand):
 
@@ -199,7 +198,7 @@ class HostCommand(PluginCommand):
         elif arguments.setup:
 
             names = Parameter.expand(arguments.WORKERS)
-            Host.setup(names=names, laptop=arguments.LAPTOP)
+            HostCreate.setup(names=names, laptop=arguments.LAPTOP)
 
         elif arguments.scp and not arguments.key:
 
