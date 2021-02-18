@@ -15,6 +15,7 @@ from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.host.HostCreate import HostCreate
 
+
 class HostCommand(PluginCommand):
 
     # noinspection PyUnusedLocal
@@ -181,17 +182,13 @@ class HostCommand(PluginCommand):
             eth = 'cat /sys/class/net/eth0/address'
             wlan = 'cat /sys/class/net/wlan0/address'
             if arguments.eth:
-                results = Host.ssh(hosts=names,
-                                    command=eth,
-                                    username=arguments.user)
+                results = Host.ssh(hosts=names, command=eth, username=arguments.user)
                 print("eth0:")
                 _print(results)
 
             if arguments.wlan:
 
-                results = Host.ssh(hosts=names,
-                                    command=wlan,
-                                    username=arguments.user)
+                results = Host.ssh(hosts=names, command=wlan, username=arguments.user)
                 print("wlan0:")
                 _print(results)
 
