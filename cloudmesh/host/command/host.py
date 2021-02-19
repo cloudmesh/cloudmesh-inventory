@@ -304,7 +304,7 @@ class HostCommand(PluginCommand):
                 service_template = "[Unit]\n" \
                                    f"Description=AutoSSH tunnel service to {name} on local port " \
                                    f"{port}\n" \
-                                   "After=network.target\n\n" \
+                                   "After=multi-user.target\n\n" \
                                    "[Service]\n" \
                                    "User=pi\n" \
                                    "Group=pi\n" \
