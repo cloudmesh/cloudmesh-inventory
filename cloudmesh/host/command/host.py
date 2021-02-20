@@ -9,11 +9,11 @@ from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
-from cloudmesh.common.util import sudo_writefile
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.host.HostCreate import HostCreate
+from cloudmesh.common.sudo import Sudo
 
 
 class HostCommand(PluginCommand):
@@ -321,7 +321,7 @@ class HostCommand(PluginCommand):
                                       f'     Port {port}\n\n'
 
                 ssh_config_output += ssh_config_template
-                sudo_writefile(f'/etc/systemd/system/{service_name}',
+                Sudo.writefile(f'/etc/systemd/system/{service_name}',
                                service_template)
                 port = str(int(port) + 1)
 
