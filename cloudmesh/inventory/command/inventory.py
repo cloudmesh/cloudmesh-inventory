@@ -1,11 +1,14 @@
 from pprint import pprint
+import os
 
 from cloudmesh.common.console import Console
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
-
+from cloudmesh.common.Host import Host
+from cloudmesh.common.Shell import Shell
+from cloudmesh.common.util import path_expand
 
 class InventoryCommand(PluginCommand):
 
@@ -27,17 +30,16 @@ class InventoryCommand(PluginCommand):
                                   [--service=SERVICE]
                                   [--tag=TAG]
                                   [--keyfile=KEYFILE]
-              inventory create TAG [--manager=MANAGER]
-                                          [--workers=WORKERS]
-                                          [--ip=IP]
-                                          [--inventory=INVENTORY]
-                                          [--keyfile=KEYFILE]
-              inventory set NAMES ATTRIBUTE to VALUES [--inventory=INVENTORY]
-              [--listvalue]
+              inventory create TAG [--hostnames=NAMES]
+                                   [--ip=IP]
+                                   [--inventory=INVENTORY]
+                                   [--keyfile=KEYFILE]
+              inventory set NAMES ATTRIBUTE to VALUES [--inventory=INVENTORY] [--listvalue]
               inventory delete NAMES [--inventory=INVENTORY]
               inventory clone NAMES from SOURCE [--inventory=INVENTORY]
               inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS] [--inventory=INVENTORY]
               inventory info [--inventory=INVENTORY]
+              inventory remove --inventory=INVENTORY
 
           Arguments:
             NAMES     Name of the resources (example i[10-20])
@@ -95,9 +97,8 @@ class InventoryCommand(PluginCommand):
         """
         map_parameters(arguments,
                        "columns",
-                       'manager',
-                       'workers',
                        'ip',
+                       'hostnames',
                        'inventory',
                        'keyfile',
                        'listvalue')
@@ -111,11 +112,14 @@ class InventoryCommand(PluginCommand):
             i.read()
             i.info()
 
+        elif arguments.remove and arguments.inventory:
+
+            os.system("rm -f " + path_expand(f'~/.cloudmesh/{arguments.inventory}'))
+
         elif arguments.NAMES is not None and arguments.list:
 
             hosts = Parameter.expand(arguments.NAMES)
 
-            print(hosts)
             if arguments.inventory is None:
                 i = Inventory()
             else:
@@ -157,34 +161,30 @@ class InventoryCommand(PluginCommand):
         elif arguments.create:
             tag = arguments.TAG
 
-            manager = arguments.manager
-            workers = arguments.workers
-            ips = arguments.ip
-            inventory = arguments.inventory
+            hostnames = Parameter.expand(arguments.hostnames)
+            manager, workers = Host.get_hostnames(hostnames)
+
+            ips = Parameter.expand(arguments.ip)
+
+            if len(ips) != len(hostnames):
+                Console.error("The number of hosts does not match the number of ips")
+                return
+
             keyfile = arguments.keyfile or '~/.ssh/id_rsa.pub'
 
-            if ips is None or ',' not in ips:
-                Console.error(
-                    "Missing comma delimiter between master IP and worker IPs in --ip")
-                return
-            if manager is None:
-                Console.error("Missing --manager param")
-                return
-            if workers is None:
-                Console.error("Missing --workers param")
-                return
-            if inventory is None:
+            if arguments.inventory is None:
                 Console.error("Missing --inventory param")
                 return
 
-            manager_ip, worker_ips = ips.split(',')
-            worker_ips = Parameter.expand(worker_ips)
-            worker_hostnames = Parameter.expand(workers)
+            if manager is None:
+                manager_ip = None
+                worker_ips = ips
+            else:
+                manager_ip = ips[0]
+                worker_ips = ips[1:]
 
-            if len(worker_ips) != len(worker_hostnames):
-                Console.error(
-                    "Length of worker IPs does not match length of worker hostnames")
-                return
+            worker_hostnames = workers
+
 
             if arguments.inventory is None:
                 i = Inventory()
@@ -192,29 +192,31 @@ class InventoryCommand(PluginCommand):
                 i = Inventory(f'~/.cloudmesh/{arguments.inventory}')
             i.read()
 
+            inventory_name = arguments.inventory.split('.')[0]
+
             i.add(host=manager,
                   name=manager,
                   tag=tag,
-                  cluster=inventory.split('.')[0],
+                  cluster=inventory_name,
                   service='manager',
                   ip=manager_ip,
                   keyfile=keyfile,
                   status="inactive"
                   )
 
-            for worker_hostname, worker_ip in zip(worker_hostnames, worker_ips):
-                i.add(host=worker_hostname,
-                      name=worker_hostname,
+            for worker, ip in zip(worker_hostnames, worker_ips):
+                i.add(host=worker,
+                      name=worker,
                       tag=tag,
-                      cluster=inventory.split('.')[0],
+                      cluster=inventory_name,
                       service='worker',
-                      ip=worker_ip,
+                      ip=ip,
                       keyfile=keyfile,
                       status="inactive"
                 )  # noqa: E124
 
             i.save()
-            Console.ok(f"Successfuly saved to ~/.cloudmesh/{inventory}")
+            Console.ok(f"Successfuly saved to ~/.cloudmesh/{arguments.inventory}")
 
         elif arguments.list:
 
