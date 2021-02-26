@@ -71,7 +71,7 @@ async def startup_event():
     save()
 
 # this is not yet used ....
-"""
+
 class Host(BaseModel):
         name: str
         cluster: str
@@ -86,7 +86,7 @@ class Host(BaseModel):
         comment: Optional[str] = None
         description: Optional[str] = None
         metadata: Optional[dict] = None
-"""
+
 
 @app.get("/")
 def read_root():
@@ -100,5 +100,6 @@ def read_host(name: str):
 
 @app.put("/hosts/{name}")
 def update_host(name: str, host: Host):
+    # this is not yet properly implemented
     save()
     return {"name": host.name, "name": name}
