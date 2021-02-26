@@ -5,7 +5,7 @@ from cloudmesh.common.util import readfile
 from cloudmesh.common.util import writefile
 import oyaml as yaml
 import os
-
+from cloudmesh.inventory.__version__ import version
 """
 pip install fastapi
 pip install uvicorn
@@ -42,7 +42,11 @@ d2:
 
 data = {}
 
-app = FastAPI()
+app = FastAPI(
+    title="Cloudmesh Inventory API",
+    description="The Cloudmesh Inventory API",
+    version=version,
+)
 
 
 def load(filename=None):
@@ -87,18 +91,36 @@ class Host(BaseModel):
         description: Optional[str] = None
         metadata: Optional[dict] = None
 
+        class Config:
+            schema_extra = {
+                "name": "red",
+                "cluster": "red",
+                "label": "my label",
+                "status": "running",
+                "service": "manager",
+                "os": "Unbuntu 20.04",
+                "ip_public": "198.168.50.1",
+                "ip_private": "127.0.0.1",
+                "project": "myprject",
+                "owners": ["Gregor"],
+                "comment": "a comment",
+                "description": "a description",
+                "metadata": {"one": "text"}
+            }
 
-@app.get("/")
+
+
+@app.get("/inventory/")
 def read_root():
     return data
 
 
-@app.get("/hosts/{name}")
+@app.get("/inventory/hosts/{name}")
 def read_host(name: str):
     return data[name]
 
 
-@app.put("/hosts/{name}")
+@app.put("/inventory/hosts/{name}")
 def update_host(name: str, host: Host):
     # this is not yet properly implemented
     save()
