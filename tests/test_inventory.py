@@ -16,7 +16,7 @@ class Test_inventory:
     def setup(self):
         self.i = Inventory('~/.cloudmesh/test.yaml')
         self.i.info()
-    
+
     def test_add(self):
         HEADING(txt="cms inventory add")
         cluster = "test_cluster"
@@ -50,7 +50,6 @@ class Test_inventory:
 
         self.i.save()
 
-
     def test_list(self):
         HEADING(txt="cms inventory list")
 
@@ -63,7 +62,7 @@ class Test_inventory:
 
         for order in self.i.order:
             assert order in t
-    
+
     def test_set(self):
         HEADING()
 
@@ -74,6 +73,8 @@ class Test_inventory:
     def test_find(self):
         HEADING()
         assert len(self.i.find(host="red002")) > 0
+
+
 """
 # We need nostest for this
 

@@ -7,8 +7,8 @@ from cloudmesh.inventory.inventory import Inventory
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command, map_parameters
 from cloudmesh.common.Host import Host
-from cloudmesh.common.Shell import Shell
 from cloudmesh.common.util import path_expand
+
 
 class InventoryCommand(PluginCommand):
 
@@ -184,7 +184,6 @@ class InventoryCommand(PluginCommand):
                 worker_ips = ips[1:]
 
             worker_hostnames = workers
-
 
             if arguments.inventory is None:
                 i = Inventory()

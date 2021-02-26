@@ -40,8 +40,6 @@ d2:
   service: ''
 """
 
-
-
 data = {}
 
 app = FastAPI()

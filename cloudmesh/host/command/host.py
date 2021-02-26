@@ -295,8 +295,8 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
             port = arguments.port or "8001"
             ssh_config_output = f'Host {hostname}\n' \
-                                      f'     HostName {hostname}.local\n' \
-                                      f'     User pi\n\n'
+                                f'     HostName {hostname}.local\n' \
+                                f'     User pi\n\n'
 
             for name in names:
                 service_name = f"autossh-{name}.service"

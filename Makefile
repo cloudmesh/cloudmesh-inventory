@@ -11,10 +11,9 @@ endef
 
 all: install
 
-
 flake8:
-	flake8 --max-line-length 124 --ignore=E722 cloudmesh
-	flake8 --max-line-length 124 --ignore=E722 tests
+	cd ..; flake8 --max-line-length 124 --ignore=E722 cloudmesh-$(package)/cloudmesh
+	cd ..; flake8 --max-line-length 124 --ignore=E722 cloudmesh-$(package)/tests
 
 install:
 	pip install -e .
