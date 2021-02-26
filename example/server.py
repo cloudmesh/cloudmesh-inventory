@@ -4,14 +4,43 @@ from pydantic import BaseModel
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import writefile
 import oyaml as yaml
+import os
 
 """
 pip install fastapi
 pip install uvicorn
-wget --recursive --no-parent http://example.com/configs/.vim/
-
+git clone https://github.com/cloudmesh/cloudmesh-inventory
+cd cloudmesh-inventory/example/
 uvicorn server:app --reload
+
+# http://127.0.0.1:8000/docs 
 """
+
+
+sample = """
+d1:
+  cluster: delta
+  comment: ''
+  host: d1
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: openstack
+  service: ''
+d2:
+  cluster: delta
+  comment: ''
+  host: d2
+  ip: ''
+  label: delta
+  name: ''
+  owners: ''
+  project: openstack
+  service: ''
+"""
+
+
 
 data = {}
 
@@ -21,8 +50,12 @@ app = FastAPI()
 def load(filename=None):
     global data
     filename = filename or "~/.cloudmesh/inventory.yaml"
-    content = readfile(filename)
+    if os.path.exists(filename):
+        content = readfile(filename)
+    else:
+        content = sample
     data = yaml.safe_load(content)
+
 
 def save(filename=None):
     global data
@@ -39,6 +72,7 @@ async def startup_event():
 async def startup_event():
     save()
 
+# this is not yet used ....
 class Host(BaseModel):
         name: str
         cluster: str
