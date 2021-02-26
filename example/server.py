@@ -71,20 +71,22 @@ async def startup_event():
     save()
 
 # this is not yet used ....
+"""
 class Host(BaseModel):
         name: str
         cluster: str
         label: str
         status: str
-        service: Optional[str] =None
-        os: Optional[str] =None
-        ip_public: Optional[str] =None
-        ip_private: Optional[str] =None
-        project: Optional[str] =None
-        owners: Optional[list] =None
-        comment: Optional[str] =None
-        description: Optional[str] =None
-        metadata: Optional[dict] =None
+        service: Optional[str] = None
+        os: Optional[str] = None
+        ip_public: Optional[str] = None
+        ip_private: Optional[str] = None
+        project: Optional[str] = None
+        owners: Optional[list] = None
+        comment: Optional[str] = None
+        description: Optional[str] = None
+        metadata: Optional[dict] = None
+"""
 
 @app.get("/")
 def read_root():
