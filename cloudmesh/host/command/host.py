@@ -34,6 +34,7 @@ class HostCommand(PluginCommand):
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
+              host key add NAMES FILE
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
@@ -230,6 +231,34 @@ class HostCommand(PluginCommand):
                                username=arguments.user)
 
             _print(results)
+
+        elif arguments.key and arguments.add:
+            # FILE argument is allowed to be either a path or an ssh-key
+            isFile = False
+            if os.path.isfile(arguments.FILE):
+                isFile = True
+            elif len(arguments.FILE) < 8 or arguments.FILE[0:8] != "ssh-rsa":
+                if not yn_choice('Specified key does not begin with ssh-rsa. Are you sure this is correct?'):
+                    Console.ok("Terminating")
+                    return
+
+            if isFile:
+                # Copy to temp location
+                Host.put(
+                    hosts=arguments.NAMES,
+                    source=arguments.FILE,
+                    destination="~/.ssh/key.tmp"
+                )
+                # Execute append command and remove command
+                command = 'cat ~/.ssh/key.tmp >> ~/.ssh/authorized_keys; rm ~/.ssh/key.tmp'
+                Host.ssh(
+                    hosts=arguments.NAMES,
+                    command=command
+                )
+
+            else:
+                # Add the raw key somehow.
+                raise NotImplementedError()
 
         elif arguments.key and arguments.gather:
 
