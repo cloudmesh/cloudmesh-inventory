@@ -9,6 +9,7 @@ from cloudmesh.common.debug import VERBOSE
 from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
+from cloudmesh.common.util import yn_choice
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
@@ -245,8 +246,12 @@ class HostCommand(PluginCommand):
                 directory = os.path.dirname(filename)
                 if directory:
                     Shell.mkdir(directory)
-                with open(filename, "w") as f:
-                    f.write(output)
+                if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to append?'):
+                    with open(filename, "a") as f:
+                        f.write(output)
+                else:
+                    with open(filename, "w") as f:
+                        f.write(output)
             else:
                 print(output)
 
