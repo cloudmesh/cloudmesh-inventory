@@ -35,6 +35,7 @@ class HostCommand(PluginCommand):
               host key gather NAMES [--authorized_keys] [FILE]
               host key scatter NAMES FILE
               host key add NAMES FILE
+              host key delete NAMES FILE
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
@@ -89,6 +90,20 @@ class HostCommand(PluginCommand):
 
                 Example:
                     ssh key scatter "red[01-10]"
+
+              host key add NAMES FILE
+
+                Adds all keys in FILE into the authorized_keys of NAMES.
+
+                Example:
+                    cms host key add worker001 ~/.ssh/id_rsa.pub
+
+              host key delete NAMES FILE
+
+                Deletes all keys in fILE from authorized_keys of NAMES if they exist.
+
+                Example
+                    cms host key delete worker001 ~/.ssh/id_rsa.pub
 
               host key scp NAMES FILE
 
@@ -233,32 +248,50 @@ class HostCommand(PluginCommand):
             _print(results)
 
         elif arguments.key and arguments.add:
-            # FILE argument is allowed to be either a path or an ssh-key
-            isFile = False
-            if os.path.isfile(arguments.FILE):
-                isFile = True
-            elif len(arguments.FILE) < 8 or arguments.FILE[0:8] != "ssh-rsa":
-                if not yn_choice('Specified key does not begin with ssh-rsa. Are you sure this is correct?'):
-                    Console.ok("Terminating")
-                    return
+            filename = path_expand(arguments.FILE)
+            if not os.path.isfile(filename):
+                Console.error(f"Cannot find file {filename}")
+                return
 
-            if isFile:
-                # Copy to temp location
-                Host.put(
-                    hosts=arguments.NAMES,
-                    source=arguments.FILE,
-                    destination="~/.ssh/key.tmp"
-                )
-                # Execute append command and remove command
-                command = 'cat ~/.ssh/key.tmp >> ~/.ssh/authorized_keys; rm ~/.ssh/key.tmp'
-                Host.ssh(
-                    hosts=arguments.NAMES,
-                    command=command
-                )
+            # Copy to temp location
+            Host.put(
+                hosts=arguments.NAMES,
+                source=filename,
+                destination="~/.ssh/key.tmp"
+            )
+            # Execute append command and remove command
+            command = 'cat ~/.ssh/key.tmp >> ~/.ssh/authorized_keys && rm ~/.ssh/key.tmp'
+            Host.ssh(
+                hosts=arguments.NAMES,
+                command=command
+            )
 
-            else:
-                # Add the raw key somehow.
-                raise NotImplementedError()
+        elif arguments.key and arguments.delete:
+            Console.ok("key delete")
+            print(arguments.NAMES, arguments.FILE)
+            filename = path_expand(arguments.FILE)
+            if not os.path.isfile(filename):
+                Console.error(f"Cannot find file {filename}")
+                return
+            
+            # Copy to temp location
+            remote_temp = "~/.ssh/key.tmp"
+            Host.put(
+                hosts=arguments.NAMES,
+                source=filename,
+                destination=remote_temp
+            )
+            # grep can read multiple patterns from a file, one per line. Combine with
+            # the options -v to output non-matching lines, and -F to match strings
+            # instead of regex and -x to require that the whole line matches.
+            command = f"""grep -Fvx -f {remote_temp} ~/.ssh/authorized_keys >remaining_keys && \
+            mv remaining_keys ~/.ssh/authorized_keys && \
+            rm {remote_temp}"""
+            Host.ssh(
+                hosts=arguments.NAMES,
+                command=command
+            )
+            Console.ok(f"Delete keys from {filename} on {arguments.NAMES}")
 
         elif arguments.key and arguments.gather:
 
