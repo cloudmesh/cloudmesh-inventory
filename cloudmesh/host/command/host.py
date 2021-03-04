@@ -39,6 +39,8 @@ class HostCommand(PluginCommand):
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
+              host shutdown NAMES
+              host reboot NAMES
 
           This command does some useful things.
 
@@ -164,6 +166,16 @@ class HostCommand(PluginCommand):
                     cms host key scatter red00[1-3],localhost keys.txt
                     rm keys.txt
                     cms host tunnel create red00[1-3]
+
+              host shutdown NAMES
+
+                Shutsdown NAMES with `sudo shutdown -h now`. If localhost in
+                names, it is shutdown last.
+
+              host reboot NAMES
+
+                Reboots NAMES with `sudo reboot`. If localhost in names,
+                it is rebooted last.
         """
 
         def _print(results):
@@ -405,5 +417,31 @@ class HostCommand(PluginCommand):
                   'alias simple ssh access (i.e. ssh red001).')
             banner('copy to ~/.ssh/config on remote host (i.e laptop)')
             print(ssh_config_output)
+
+        elif arguments.shutdown or arguments.reboot:
+
+            if arguments.shutdown:
+                command = 'sudo shutdown -h now'
+            elif arguments.reboot:
+                command = 'sudo reboot'
+
+            names = Parameter.expand(arguments.NAMES)
+            hostname = Shell.run("hostname").strip()
+
+            localhost = False
+            if "localhost" in names:
+                names.remove("localhost")
+                localhost =True
+            if hostname in names:
+                names.remove(hostname)
+                localhost = True
+
+            Host.ssh(hosts=names, command=command)
+            # _print(results)
+            # results can be misleading becuase there is a race between the
+            # shutdown and the error code being returned from the ssh processes.
+
+            if localhost:
+                os.system(command)
 
         return ""
