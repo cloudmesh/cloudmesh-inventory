@@ -30,6 +30,7 @@ class InventoryCommand(PluginCommand):
                                   [--service=SERVICE]
                                   [--tag=TAG]
                                   [--keyfile=KEYFILE]
+                                  [--router=ROUTER]
               inventory create TAG [--hostnames=NAMES]
                                    [--ip=IP]
                                    [--inventory=INVENTORY]
