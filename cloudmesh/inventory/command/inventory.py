@@ -174,8 +174,7 @@ class InventoryCommand(PluginCommand):
             keyfile = arguments.keyfile or '~/.ssh/id_rsa.pub'
 
             if arguments.inventory is None:
-                Console.error("Missing --inventory param")
-                return
+                arguments.inventory = "inventory.yaml"
 
             if manager is None:
                 manager_ip = None
@@ -283,7 +282,6 @@ class InventoryCommand(PluginCommand):
                     pass
             element['host'] = arguments.NAMES
             element['status'] = 'inactive'
-            element['name'] = arguments.NAMES
             i.add(**element)
             i.save()
             print(i.list(format="table"))
