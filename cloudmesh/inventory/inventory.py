@@ -50,41 +50,43 @@ class Inventory(object):
 
         self.header = [
             "Host",
-            "Name",
-            "Type",
+            # "Name",
+            # "Type",
             "Tag",
             "Cluster",
-            "Label",
+            # "Label",
             "Service",
             "Services",
             "IP",
             "DNS",
             "Router",
-            "Project",
+            # "Project",
             "Owners",
             "Comment",
             "Description",
             "Keyfile",
-            "Status"]
+            # "Status"
+            ]
 
         self.order = [
             "host",
-            "name",
-            "type",
+            # "name",
+            # "type",
             "tag",
             "cluster",
-            "label",
+            # "label",
             "service",
             "services",
             "ip",
             "dns",
             "router",
-            "project",
+            # "project",
             "owners",
             "comment",
             "description",
             "keyfile",
-            "status"]
+            # "status"
+            ]
 
         self.entry = {}
         for key in self.order:
