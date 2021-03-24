@@ -526,7 +526,7 @@ class HostCommand(PluginCommand):
                 print(result)
                 names.remove(localhost)
 
-            for name in names:
+            if len(names) > 0:
                 command = f"sudo adduser {user} --disabled-password --gecos ',' "
                 results = Host.ssh(
                     hosts=names,
@@ -556,7 +556,7 @@ class HostCommand(PluginCommand):
                       "password\n")
                 password = getpass("Please enter the user password:")
 
-            for name in names:
+            if len(names) > 0:
                 command = f'echo -e "{password}\n{password}" | sudo passwd {user}'
                 results = Host.ssh(
                     hosts=names,
@@ -580,7 +580,7 @@ class HostCommand(PluginCommand):
                 print(result)
                 names.remove(localhost)
 
-            for name in names:
+            if len(names) > 0:
                 command = f'sudo adduser {user} sudo'
                 results = Host.ssh(
                     hosts=names,
@@ -603,7 +603,7 @@ class HostCommand(PluginCommand):
                 print(result)
                 names.remove(localhost)
 
-            for name in names:
+            if len(names) > 0:
                 command = f'sudo userdel -r {user}'
                 results = Host.ssh(
                     hosts=names,
