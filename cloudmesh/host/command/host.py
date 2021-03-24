@@ -18,6 +18,7 @@ from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.host.HostCreate import HostCreate
 from cloudmesh.common.sudo import Sudo
+from cloudmesh.common.util import writefile
 
 
 class HostCommand(PluginCommand):
@@ -48,6 +49,7 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
+              host config proxy PROXY NAMES
 
 
           This command does some useful things.
@@ -193,6 +195,16 @@ class HostCommand(PluginCommand):
 
                 Adds a user with user name USER to the hosts identified by
                 NAMES.
+
+              host config proxy PROXY NAMES
+
+                This adds to your ~/.ssh/config file a ProxyJump
+                configuration to reach NAMES via PROXY. This is useful when
+                the PROXY is acting as a network bridge for NAMES to your
+                current device.
+
+                Example:
+                    cms host config proxy pi@red.lcaol red00[1-2]
         """
 
         def _print(results):
@@ -408,7 +420,7 @@ class HostCommand(PluginCommand):
                                    command=command)
                 _print(result)
 
-        elif arguments.config:
+        elif arguments.config and not arguments.proxy:
 
             key = arguments.key or "~/.ssh/id_rsa.pub"
             result = Host.config(hosts=arguments.NAMES,
@@ -610,5 +622,57 @@ class HostCommand(PluginCommand):
                     command=command
                 )
                 _print(results)
+
+        elif arguments.config and arguments.proxy:
+
+            if '@'not in arguments.PROXY or '.local' not in arguments.PROXY:
+                raise Exception('Please provide user with proxy host e.g '
+                                'pi@red.local')
+
+            user = arguments.PROXY.split('@')[0]
+            names = Parameter.expand(arguments.NAMES)
+            proxy = arguments.PROXY
+            proxy_host = arguments.PROXY.split('@')[1].replace(".local","")
+
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
+                                f'Host {proxy_host}\n' \
+                                f'     HostName {proxy}\n' \
+                                f'     User {user}\n\n'
+
+            for name in names:
+                ssh_config_template = f'Host {name}\n' \
+                                      f'     HostName {name}\n' \
+                                      f'     User {user}\n' \
+                                      f'     ProxyJump {proxy}\n\n'
+                ssh_config_output += ssh_config_template
+
+            ssh_config_output += f'##### CLOUDMESH PROXY CONFIG #####\n'
+
+            print('Adding to ~/.ssh/config')
+            print(ssh_config_output)
+
+            if not os.path.exists(path_expand('~/.ssh/config')):
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    f.write(ssh_config_output)
+            else:
+                f = open(path_expand('~/.ssh/config'), 'r')
+                lines = f.readlines()
+                f.close()
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    if f'##### CLOUDMESH PROXY CONFIG #####\n' in lines:
+                        start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                        print(f'start is {start}')
+                        lines.reverse()
+                        end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                        end = len(lines) - end - 1
+                        print(f'end is {end}')
+                        lines.reverse()
+                        del lines[start:end+1]
+                        f.writelines(lines)
+                        f.write(ssh_config_output)
+                    else:
+                        f.writelines(lines)
+                        f.write(ssh_config_output)
+                        f.close()
 
         return ""
