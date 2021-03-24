@@ -1,5 +1,8 @@
 import os
+import platform
+
 from pprint import pprint
+from getpass import getpass
 
 from cloudmesh.common.Host import Host
 from cloudmesh.common.Printer import Printer
@@ -33,7 +36,7 @@ class HostCommand(PluginCommand):
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
               host key gather NAMES [--authorized_keys] [FILE]
-              host key scatter NAMES FILE
+              host key scatter NAMES FILE [--user=USER]
               host key add NAMES FILE
               host key delete NAMES FILE
               host tunnel create NAMES [--port=PORT]
@@ -41,6 +44,11 @@ class HostCommand(PluginCommand):
               host setup WORKERS [LAPTOP]
               host shutdown NAMES
               host reboot NAMES
+              host adduser NAMES USER
+              host passwd NAMES USER
+              host addsudo NAMES USER
+              host deluser NAMES USER
+
 
           This command does some useful things.
 
@@ -81,17 +89,21 @@ class HostCommand(PluginCommand):
 
                     ssh key gather "red[01-10]" keys.txt
 
-              host key scatter HOSTS FILE
+              host key scatter HOSTS FILE [--user=USER]
 
                 copies all keys from file FILE to authorized_keys on all hosts,
                 but also makes sure that the users ~/.ssh/id_rsa.pub key is in
-                the file.
+                the file. If provided the optional user, it will add the keys to
+                that user's .ssh directory. This is often required when
+                adding a new user in which case HOSTS should still a sudo
+                user with ssh currently enabled.
 
                 1) adds ~/.id_rsa.pub to the FILE only if its not already in it
                 2) removes all duplicated keys
 
                 Example:
                     ssh key scatter "red[01-10]"
+                    ssh key scatter pi@red[01-10] keys.txt --user=alice
 
               host key add NAMES FILE
 
@@ -176,6 +188,11 @@ class HostCommand(PluginCommand):
 
                 Reboots NAMES with `sudo reboot`. If localhost in names,
                 it is rebooted last.
+
+              host adduser NAMES USER
+
+                Adds a user with user name USER to the hosts identified by
+                NAMES.
         """
 
         def _print(results):
@@ -194,7 +211,8 @@ class HostCommand(PluginCommand):
                        'dryrun',
                        'output',
                        'user',
-                       'port')
+                       'port',
+                       )
         dryrun = arguments.dryrun
 
         if dryrun:
@@ -333,16 +351,62 @@ class HostCommand(PluginCommand):
 
             names = arguments.NAMES
             file = arguments.get("FILE")
+            user = arguments.user
+            print(user)
 
             if not os.path.isfile(file):
                 Console.error("The file does not exist")
                 return ""
 
-            result = Host.put(hosts=names,
-                              source=file,
-                              destination=".ssh/authorized_keys")
+            if not user:
+                result = Host.put(hosts=names,
+                                  source=file,
+                                  destination=".ssh/authorized_keys")
 
-            _print(result)
+                _print(result)
+            else:
+                Console.info('SCP to ./temp_authorzied_keys_temp')
+                result = Host.put(hosts=names,
+                                  source=file,
+                                  destination="temp_authorized_keys_temp")
+                _print(result)
+
+                Console.info(f'Mkdir /home/{user}/.ssh if not exist')
+                command = f'sudo mkdir -p /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                   command=command)
+                _print(result)
+
+                Console.info(f'Chown /home/{user}/.ssh to {user}')
+                command = f'sudo chown {user}:{user} /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                   command=command)
+                _print(result)
+
+                Console.info(f'Chmod /home/{user}/.ssh to 700')
+                command = f'sudo chmod 700 /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+                Console.info(f'Mv temp_authorized_keys_temp to /home/'
+                             f'{user}/.ssh/authorized_keys')
+                command = f'sudo mv temp_authorized_keys_temp /home/' \
+                          f'{user}/.ssh/authorized_keys'
+                result = Host.ssh(hosts=names,
+                                   command=command)
+                _print(result)
+
+                Console.info(f'Chown /home/{user}/.ssh/authorized_keys to '
+                             f'{user}')
+                command = f'sudo chown {user}:{user} /home/' \
+                          f'{user}/.ssh/authorized_keys'
+                result = Host.ssh(hosts=names,
+                                   command=command)
+                _print(result)
 
         elif arguments.config:
 
@@ -428,7 +492,7 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
             hostname = Shell.run("hostname").strip()
 
-            localhost = False
+            localhost = None
             if "localhost" in names:
                 names.remove("localhost")
                 localhost =True
@@ -443,5 +507,108 @@ class HostCommand(PluginCommand):
 
             if localhost:
                 os.system(command)
+
+        elif arguments.adduser:
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.USER
+
+            localhost = None
+            if 'localhost' in names:
+                localhost = 'localhost'
+            elif platform.node() in names:
+                localhost = platform.node()
+
+            if localhost in names:
+                print('\nAdding user to localhost')
+                result = Shell.run(f'sudo adduser {user} '
+                                      f'--disabled-password '
+                                      f'--gecos "" ')
+                print(result)
+                names.remove(localhost)
+
+            for name in names:
+                command = f"sudo adduser {user} --disabled-password --gecos ',' "
+                results = Host.ssh(
+                    hosts=names,
+                    command=command
+                )
+                _print(results)
+
+        elif arguments.passwd:
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.USER
+
+            localhost = None
+            if 'localhost' in names:
+                localhost = 'localhost'
+            elif platform.node() in names:
+                localhost = platform.node()
+
+            if localhost in names:
+                print("\nSetting password on localhost, please provide user "
+                      "password")
+                result = os.system(f'sudo passwd {user}')
+                print(result)
+                names.remove(localhost)
+
+            if len(names) > 0:
+                print("\nSetting password on remote hosts, please enter user "
+                      "password\n")
+                password = getpass("Please enter the user password:")
+
+            for name in names:
+                command = f'echo -e "{password}\n{password}" | sudo passwd {user}'
+                results = Host.ssh(
+                    hosts=names,
+                    command=command
+                )
+                _print(results)
+
+        elif arguments.addsudo:
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.USER
+
+            localhost = None
+            if 'localhost' in names:
+                localhost = 'localhost'
+            elif platform.node() in names:
+                localhost = platform.node()
+
+            if localhost in names:
+                print('\nAdding user to sudo group on localhost')
+                result = Shell.run(f'sudo adduser {user} sudo')
+                print(result)
+                names.remove(localhost)
+
+            for name in names:
+                command = f'sudo adduser {user} sudo'
+                results = Host.ssh(
+                    hosts=names,
+                    command=command
+                )
+                _print(results)
+
+        elif arguments.deluser:
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.USER
+
+            if 'localhost' in names:
+                localhost = 'localhost'
+            elif platform.node() in names:
+                localhost = platform.node()
+
+            if localhost in names:
+                print('\nDeleting user on localhost')
+                result = Shell.run(f'sudo userdel -r {user}')
+                print(result)
+                names.remove(localhost)
+
+            for name in names:
+                command = f'sudo userdel -r {user}'
+                results = Host.ssh(
+                    hosts=names,
+                    command=command
+                )
+                _print(results)
 
         return ""
