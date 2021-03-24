@@ -376,7 +376,6 @@ class HostCommand(PluginCommand):
             names = arguments.NAMES
             file = arguments.get("FILE")
             user = arguments.user
-            print(user)
 
             if not os.path.isfile(file):
                 Console.error("The file does not exist")
