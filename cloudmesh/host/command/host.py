@@ -648,7 +648,7 @@ class HostCommand(PluginCommand):
 
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
                                 f'Host {proxy_host}\n' \
-                                f'     HostName {proxy}\n' \
+                                f'     HostName {proxy_host}.local\n' \
                                 f'     User {user}\n\n'
 
             for name in names:
