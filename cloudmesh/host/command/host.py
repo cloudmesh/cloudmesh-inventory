@@ -194,7 +194,19 @@ class HostCommand(PluginCommand):
               host adduser NAMES USER
 
                 Adds a user with user name USER to the hosts identified by
-                NAMES.
+                NAMES. Password is disabled, see host passwd to enable.
+
+              host addsudo NAMES USER
+
+                Adds sudo rights to USER at NAMES
+
+              host passwd NAMES USER
+
+                Changes the password for USER at NAMES
+
+              host deluser NAMES USER
+
+                Deleted USER from NAMES. Home directory will be removed.
 
               host config proxy PROXY NAMES
 
