@@ -21,5 +21,5 @@ class HostCreate:
                   f"~/.ssh/authorized_keys")
         Console.info("Scattering keys to manager and workers.")
         os.system(f"cms host key scatter {workers} ~/.ssh/authorized_keys")
-        Console.info("Setting up ssh tunnels to workers through manager")
-        os.system(f"cms host tunnel create {workers}")
+        # Console.info("Setting up ssh tunnels to workers through manager")
+        # os.system(f"cms host tunnel create {workers}")
