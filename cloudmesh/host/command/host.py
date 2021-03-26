@@ -672,11 +672,9 @@ class HostCommand(PluginCommand):
                 with open(path_expand('~/.ssh/config'), 'w+') as f:
                     if f'##### CLOUDMESH PROXY CONFIG #####\n' in lines:
                         start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
-                        print(f'start is {start}')
                         lines.reverse()
                         end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
                         end = len(lines) - end - 1
-                        print(f'end is {end}')
                         lines.reverse()
                         del lines[start:end+1]
                         f.writelines(lines)
