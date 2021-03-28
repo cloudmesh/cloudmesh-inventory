@@ -66,9 +66,8 @@ class Inventory(object):
             "Owners",
             "Comment",
             "Description",
-            "Keyfile",
-            # "Status"
-            ]
+            "Keyfile"]
+        # "Status"
 
         self.order = [
             "host",
@@ -88,9 +87,8 @@ class Inventory(object):
             "owners",
             "comment",
             "description",
-            "keyfile",
-            # "status"
-            ]
+            "keyfile"]
+        # "status"
 
         self.entry = {}
         for key in self.order:

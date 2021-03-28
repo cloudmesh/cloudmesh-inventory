@@ -18,7 +18,6 @@ from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
 from cloudmesh.host.HostCreate import HostCreate
 from cloudmesh.common.sudo import Sudo
-from cloudmesh.common.util import writefile
 
 
 class HostCommand(PluginCommand):
@@ -328,7 +327,6 @@ class HostCommand(PluginCommand):
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
-            
             # Copy to temp location
             remote_temp = "~/.ssh/key.tmp"
             Host.put(
@@ -399,14 +397,14 @@ class HostCommand(PluginCommand):
                 command = f'sudo mkdir -p /home/' \
                           f'{user}/.ssh/'
                 result = Host.ssh(hosts=names,
-                                   command=command)
+                                  command=command)
                 _print(result)
 
                 Console.info(f'Chown /home/{user}/.ssh to {user}')
                 command = f'sudo chown {user}:{user} /home/' \
                           f'{user}/.ssh/'
                 result = Host.ssh(hosts=names,
-                                   command=command)
+                                  command=command)
                 _print(result)
 
                 Console.info(f'Chmod /home/{user}/.ssh to 700')
@@ -421,7 +419,7 @@ class HostCommand(PluginCommand):
                 command = f'sudo mv temp_authorized_keys_temp /home/' \
                           f'{user}/.ssh/authorized_keys'
                 result = Host.ssh(hosts=names,
-                                   command=command)
+                                  command=command)
                 _print(result)
 
                 Console.info(f'Chown /home/{user}/.ssh/authorized_keys to '
@@ -429,7 +427,7 @@ class HostCommand(PluginCommand):
                 command = f'sudo chown {user}:{user} /home/' \
                           f'{user}/.ssh/authorized_keys'
                 result = Host.ssh(hosts=names,
-                                   command=command)
+                                  command=command)
                 _print(result)
 
         elif arguments.config and not arguments.proxy:
@@ -519,7 +517,7 @@ class HostCommand(PluginCommand):
             localhost = None
             if "localhost" in names:
                 names.remove("localhost")
-                localhost =True
+                localhost = True
             if hostname in names:
                 names.remove(hostname)
                 localhost = True
@@ -545,8 +543,8 @@ class HostCommand(PluginCommand):
             if localhost in names:
                 print('\nAdding user to localhost')
                 result = Shell.run(f'sudo adduser {user} '
-                                      f'--disabled-password '
-                                      f'--gecos "" ')
+                                   f'--disabled-password '
+                                   f'--gecos "" ')
                 print(result)
                 names.remove(localhost)
 
@@ -644,7 +642,7 @@ class HostCommand(PluginCommand):
             user = arguments.PROXY.split('@')[0]
             names = Parameter.expand(arguments.NAMES)
             proxy = arguments.PROXY
-            proxy_host = arguments.PROXY.split('@')[1].replace(".local","")
+            proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
 
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
                                 f'Host {proxy_host}\n' \
@@ -660,7 +658,7 @@ class HostCommand(PluginCommand):
                                       f'     StrictHostKeyChecking no\n\n'
                 ssh_config_output += ssh_config_template
 
-            ssh_config_output += f'##### CLOUDMESH PROXY CONFIG #####\n'
+            ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
 
             print('Adding to ~/.ssh/config')
             print(ssh_config_output)
@@ -673,14 +671,14 @@ class HostCommand(PluginCommand):
                 lines = f.readlines()
                 f.close()
                 with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    if f'##### CLOUDMESH PROXY CONFIG #####\n' in lines:
+                    if '##### CLOUDMESH PROXY CONFIG #####\n' in lines:
                         start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
                         lines.reverse()
                         end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
                         end = len(lines) - end - 1
                         lines.reverse()
-                        original_config = lines[start:end+1]
-                        del lines[start:end+1]
+                        original_config = lines[start:end + 1]
+                        del lines[start:end + 1]
                         f.writelines(lines)
                         if arguments.append:
                             f.writelines(original_config)
