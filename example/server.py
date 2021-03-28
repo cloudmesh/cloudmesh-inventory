@@ -110,17 +110,17 @@ class Host(BaseModel):
 
 
 
-@app.get("/inventory/")
+@app.get("/inventory/host/")
 def read_root():
     return data
 
 
-@app.get("/inventory/hosts/{name}")
+@app.get("/inventory/host/{name}")
 def read_host(name: str):
     return data[name]
 
 
-@app.put("/inventory/hosts/{name}")
+@app.put("/inventory/host/{name}")
 def update_host(name: str, host: Host):
     # this is not yet properly implemented
     save()
