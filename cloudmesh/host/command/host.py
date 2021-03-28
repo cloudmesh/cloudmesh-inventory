@@ -648,13 +648,15 @@ class HostCommand(PluginCommand):
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
                                 f'Host {proxy_host}\n' \
                                 f'     HostName {proxy_host}.local\n' \
-                                f'     User {user}\n\n'
+                                f'     User {user}\n' \
+                                f'     StrictHostKeyChecking no\n\n'
 
             for name in names:
                 ssh_config_template = f'Host {name}\n' \
                                       f'     HostName {name}\n' \
                                       f'     User {user}\n' \
-                                      f'     ProxyJump {proxy}\n\n'
+                                      f'     ProxyJump {proxy}\n' \
+                                      f'     StrictHostKeyChecking no\n\n'
                 ssh_config_output += ssh_config_template
 
             ssh_config_output += f'##### CLOUDMESH PROXY CONFIG #####\n'
