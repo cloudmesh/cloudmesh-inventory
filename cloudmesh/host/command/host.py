@@ -49,7 +49,7 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
-              host config proxy PROXY NAMES
+              host config proxy PROXY NAMES [--append]
 
 
           This command does some useful things.
@@ -236,6 +236,7 @@ class HostCommand(PluginCommand):
                        'output',
                        'user',
                        'port',
+                       'append',
                        )
         dryrun = arguments.dryrun
 
@@ -678,9 +679,14 @@ class HostCommand(PluginCommand):
                         end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
                         end = len(lines) - end - 1
                         lines.reverse()
+                        original_config = lines[start:end+1]
                         del lines[start:end+1]
                         f.writelines(lines)
-                        f.write(ssh_config_output)
+                        if arguments.append:
+                            f.writelines(original_config)
+                            f.write(ssh_config_output)
+                        else:
+                            f.write(ssh_config_output)
                     else:
                         f.writelines(lines)
                         f.write(ssh_config_output)
