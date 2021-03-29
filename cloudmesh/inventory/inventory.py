@@ -290,7 +290,8 @@ class Inventory(object):
     @staticmethod
     def build_default_inventory(filename, manager, workers, ips=None,
                                 manager_image='latest-lite',
-                                worker_image='latest-lite'):
+                                worker_image='latest-lite',
+                                gui_images=None):
         # cms inventory add red --service=manager --ip=10.1.1.1 --tag=latest-lite
         # --timezone="America/Indiana/Indianapolis" --locale="us"
         # cms inventory set red services to "bridge" --listvalue
@@ -306,7 +307,7 @@ class Inventory(object):
         timezone = Shell.timezone()
         locale = Shell.locale()
         manager_ip = ips[0] if ips else '10.1.1.1'
-        image = manager_image
+        image = gui_images[0] if gui_images else manager_image
         element = {}
         element['host'] = manager
         element['status'] = 'inactive'
@@ -325,7 +326,7 @@ class Inventory(object):
         if workers is not None:
             for worker in workers:
                 ip = ips[index] if ips else f'10.1.1.{last_octet}'
-                image = worker_image
+                image = gui_images[index] if gui_images else worker_image
                 element = {}
                 element['host'] = worker
                 element['status'] = 'inactive'
