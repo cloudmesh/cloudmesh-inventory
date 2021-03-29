@@ -287,6 +287,64 @@ class Inventory(object):
             else:
                 print(self.data[key])
 
+    @staticmethod
+    def build_default_inventory(filename, manager, workers, ips=None,
+                                manager_image='latest-lite',
+                                worker_image='latest-lite'):
+        # cms inventory add red --service=manager --ip=10.1.1.1 --tag=latest-lite
+        # --timezone="America/Indiana/Indianapolis" --locale="us"
+        # cms inventory set red services to "bridge" --listvalue
+        # cms inventory add "red0[1-3]" --service=worker --ip="10.1.1.[2-4]"
+        # --router=10.1.1.1 --tag=latest-lite  --timezone="America/Indiana/Indianapolis" --locale="us"
+        # cms inventory set "red0[1-3]" dns to "8.8.8.8,8.8.4.4" --listvalue
+
+        Console.info("No inventory found or forced rebuild. Buidling inventory "
+                    "with defaults.")
+        Shell.execute("rm", arguments=[
+                    '-f', filename])
+        i = Inventory(filename=filename)
+        timezone = Shell.timezone()
+        locale = Shell.locale()
+        manager_ip = ips[0] if ips else '10.1.1.1'
+        image = manager_image
+        element = {}
+        element['host'] = manager
+        element['status'] = 'inactive'
+        element['service'] = 'manager'
+        element['ip'] = manager_ip
+        element['tag'] = image
+        element['timezone'] = timezone
+        element['locale'] = locale
+        element['services'] = ['bridge', 'wifi']
+        element['keyfile'] = '~/.ssh/id_rsa.pub'
+        i.add(**element)
+        i.save()
+
+        last_octet = 2
+        index = 1
+        if workers is not None:
+            for worker in workers:
+                ip = ips[index] if ips else f'10.1.1.{last_octet}'
+                image = worker_image
+                element = {}
+                element['host'] = worker
+                element['status'] = 'inactive'
+                element['service'] = 'worker'
+                element['ip'] = ip
+                element['tag'] = image
+                element['timezone'] = timezone
+                element['locale'] = locale
+                element['router'] = manager_ip
+                element['dns'] = ['8.8.8.8', '8.8.4.4']
+                element['keyfile'] = '~/.ssh/id_rsa.pub'
+                i.add(**element)
+                i.save()
+                last_octet += 1
+                index += 1
+
+        i.save()
+        print(i.list(format="table"))
+
 
 class CommandSystem(object):
     @classmethod
