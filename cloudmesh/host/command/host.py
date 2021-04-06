@@ -522,8 +522,17 @@ class HostCommand(PluginCommand):
                 names.remove(hostname)
                 localhost = True
 
-            Host.ssh(hosts=names, command=command)
-            # _print(results)
+            manager, workers = Host.get_hostnames(names)
+
+            if workers:
+                Console.info(f'Executing `{command}` for {workers}')
+                Host.ssh(hosts=workers, command=command)
+
+            if manager:
+                Console.info(f'Executing `{command}` for {manager}')
+                Host.ssh(hosts=manager, command=command)
+
+            #_print(results)
             # results can be misleading becuase there is a race between the
             # shutdown and the error code being returned from the ssh processes.
 
