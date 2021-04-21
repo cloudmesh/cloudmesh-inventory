@@ -22,17 +22,17 @@ config_hosts = """
 Host red01
     StrictHostKeyChecking no
     Hostname 127.0.0.1
-    IdentityFile ~/.ssh/id_rsa.pub
+    IdentityFile ~/.ssh/id_rsa
 
 Host red02
     StrictHostKeyChecking no
     Hostname 127.0.0.1
-    IdentityFile ~/.ssh/id_rsa.pub
+    IdentityFile ~/.ssh/id_rsa
 
 Host red03
     StrictHostKeyChecking no
     Hostname 127.0.0.1
-    IdentityFile ~/.ssh/id_rsa.pub
+    IdentityFile ~/.ssh/id_rsa
 
 """
 
