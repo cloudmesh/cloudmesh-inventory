@@ -65,7 +65,7 @@ class HostCommand(PluginCommand):
 
               host scp NAMES SOURCE DESTINATION
 
-                TBD
+                Uses scp to transfer Source to NAMES:DESTINATION.
 
               host ssh NAMES COMMAND
 
@@ -269,9 +269,13 @@ class HostCommand(PluginCommand):
 
         elif arguments.scp and not arguments.key:
 
-            destinations = Parameter.expand(arguments.DESTINATION)
-            source = arguments.SOURCE
-            results_key = Host.scp(source, destinations, output="lines")  # noqa: F841
+            result = Host.put(
+                hosts=arguments.NAMES,
+                source=arguments.SOURCE,
+                destination=arguments.DESTINATION
+            )
+
+            _print(result)
 
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
