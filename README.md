@@ -24,7 +24,7 @@
 
 ## Introduction
 
-Often we need a convenient way to manage inventories for Computers and Services. One whay to do this is in databases or flat files, or dedicated services. Cloudmesh Inventory is designed to be at this time super simple and provides a list of computer entries that are used to document if a service is running on it. It uses a very small set of metadata to keep it extremely simple. All attribute values are strings. An example is 
+Often we need a convenient way to manage inventories for Computers and Services. One way to do this is in databases or flat files, or dedicated services. Cloudmesh Inventory is designed to be at this time super simple and provides a list of computer entries that are used to document if a service is running on it. It uses a very small set of metadata to keep it extremely simple. All attribute values are strings. An example is 
 
     g001:
       cluster: gregor
