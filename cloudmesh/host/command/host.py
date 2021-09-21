@@ -360,9 +360,15 @@ class HostCommand(PluginCommand):
                 processors=3,
                 dryrun=False)
 
+            print("Command ****OUTPUT****",output)
+
+            print('Command File argument', arguments.FILE)
+
             if arguments.FILE:
                 filename = path_expand(arguments.FILE)
+                print('command filename',filename)
                 directory = os.path.dirname(filename)
+                print('command directory',directory)
                 if directory:
                     Shell.mkdir(directory)
                 if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to append?'):
