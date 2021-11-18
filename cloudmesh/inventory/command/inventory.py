@@ -19,6 +19,7 @@ class InventoryCommand(PluginCommand):
         ::
 
           Usage:
+              inventory add cluster NAMES
               inventory add NAMES [--label=LABEL]
                                   [--services=SERVICES]
                                   [--project=PROJECT]
@@ -264,6 +265,22 @@ class InventoryCommand(PluginCommand):
                 i.save()
 
             print(i.list(format="table"))
+
+        elif arguments.add and arguments.cluster:
+            names = Parameter.expand(arguments.NAMES)
+            manager, workers = Host.get_hostnames(names)
+            if manager is None:
+                Console.error("A manager node is required. Numbers are not allowed in a manger name, "
+                              "i.e. red is an acceptable manager name, red00 is not.")
+                return
+            if workers:
+                worker_base_name = ''.join(
+                    [i for i in workers[0] if not i.isdigit()])
+            cluster_name = manager or worker_base_name
+            inventory = path_expand(f'~/.cloudmesh/inventory-{cluster_name}.yaml')
+            Inventory.build_default_inventory(filename=inventory,
+                                              manager=manager,
+                                              workers=workers)
 
         elif arguments.add:
 
