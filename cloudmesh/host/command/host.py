@@ -49,6 +49,7 @@ class HostCommand(PluginCommand):
               host addsudo NAMES USER
               host deluser NAMES USER
               host config proxy PROXY NAMES [--append]
+              host ping NAMES
 
 
           This command does some useful things.
@@ -277,6 +278,15 @@ class HostCommand(PluginCommand):
 
             _print(result)
 
+        elif arguments.ping:
+            names = Parameter.expand(arguments.NAMES)
+
+            # print (names)
+
+            results = Host.ping(hosts=names)
+
+            _print(results)
+
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
 
@@ -360,7 +370,7 @@ class HostCommand(PluginCommand):
                 processors=3,
                 dryrun=False)
 
-            print("Command ****OUTPUT****",output)
+            print("Command ****OUTPUT****\n", output)
 
             print('Command File argument', arguments.FILE)
 
@@ -663,7 +673,7 @@ class HostCommand(PluginCommand):
             proxy = arguments.PROXY
             proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
 
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
                                 f'Host {proxy_host}\n' \
                                 f'     HostName {proxy_host}.local\n' \
                                 f'     User {user}\n' \
@@ -674,7 +684,9 @@ class HostCommand(PluginCommand):
                                       f'     HostName {name}\n' \
                                       f'     User {user}\n' \
                                       f'     ProxyJump {proxy}\n' \
+                                      f'     PreferredAuthentications publickey\n' \
                                       f'     StrictHostKeyChecking no\n\n'
+
                 ssh_config_output += ssh_config_template
 
             ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
