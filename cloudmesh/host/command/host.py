@@ -35,10 +35,11 @@ class HostCommand(PluginCommand):
               host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
+              host key setup NAMES
               host key gather NAMES [--authorized_keys] [FILE]
-              host key scatter NAMES FILE [--user=USER]
-              host key add NAMES FILE
-              host key delete NAMES FILE
+              host key scatter NAMES [FILE] [--user=USER]
+              host key add NAMES [FILE]
+              host key delete NAMES [FILE]
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
@@ -224,10 +225,18 @@ class HostCommand(PluginCommand):
 
             if arguments.output in ['table', 'yaml']:
                 print(Printer.write(results,
-                                    order=['host', 'success', 'stdout'],
+                                    order=['host', 'success', 'stdout', 'stderr'],
                                     output=arguments.output))
             else:
                 pprint(results)
+
+        def get_fileanme(filename, hosts):
+            if filename is not None:
+                return filename
+            if type(hosts) == str:
+                hosts = Parameter.expand(hosts)
+            label = hosts[0]
+            return path_expand(f"~/.ssh/cluster_keys_{label}")
 
         map_parameters(arguments,
                        'eth',
@@ -316,7 +325,7 @@ class HostCommand(PluginCommand):
             _print(results)
 
         elif arguments.key and arguments.add:
-            filename = path_expand(arguments.FILE)
+            filename = get_fileanme(arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -336,8 +345,7 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.delete:
             Console.ok("key delete")
-            print(arguments.NAMES, arguments.FILE)
-            filename = path_expand(arguments.FILE)
+            filename = get_fileanme(arguments.FILE, arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -360,6 +368,30 @@ class HostCommand(PluginCommand):
             )
             Console.ok(f"Delete keys from {filename} on {arguments.NAMES}")
 
+
+        elif arguments.key and arguments.setup:
+
+            label = Parameter.expand(arguments.NAMES)[0]
+            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+            directory = os.path.dirname(filename)
+
+            if directory:
+                Shell.mkdir(directory)
+
+            output = Host.gather_keys(
+                username=arguments.user,
+                hosts=arguments.NAMES,
+                filename="~/.ssh/id_rsa.pub",
+                key="~/.ssh/id_rsa",
+                processors=3,
+                dryrun=False)
+
+            with open(filename, "w") as f:
+                f.write(output)
+
+            # scatter
+            # place .ssh/config a trict host check to no
+
         elif arguments.key and arguments.gather:
 
             output = Host.gather_keys(
@@ -370,30 +402,36 @@ class HostCommand(PluginCommand):
                 processors=3,
                 dryrun=False)
 
-            print("Command ****OUTPUT****\n", output)
+            VERBOSE(arguments)
 
-            print('Command File argument', arguments.FILE)
+            filename = get_fileanme(arguments.FILE, arguments.NAMES)
 
-            if arguments.FILE:
-                filename = path_expand(arguments.FILE)
-                print('command filename',filename)
-                directory = os.path.dirname(filename)
-                print('command directory',directory)
-                if directory:
-                    Shell.mkdir(directory)
-                if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to append?'):
-                    with open(filename, "a") as f:
-                        f.write(output)
-                else:
-                    with open(filename, "w") as f:
-                        f.write(output)
+            print(output)
+
+            banner(f"Writing Keys to file {filename}")
+
+            directory = os.path.dirname(filename)
+            print('command directory', directory)
+            if directory:
+                Shell.mkdir(directory)
+
+            if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to overwrite it? (If no you will append).'):
+                with open(filename, "w") as f:
+                    f.write(output)
             else:
-                print(output)
+                with open(filename, "a") as f:
+                    f.write(output)
 
         elif arguments.key and arguments.scatter:
 
+            #
+            # this should be a function in Host
+            #
+
+
+            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+
             names = arguments.NAMES
-            file = arguments.get("FILE")
             user = arguments.user
 
             if not os.path.isfile(file):
@@ -402,7 +440,7 @@ class HostCommand(PluginCommand):
 
             if not user:
                 result = Host.put(hosts=names,
-                                  source=file,
+                                  source=filename,
                                   destination=".ssh/authorized_keys")
 
                 _print(result)
