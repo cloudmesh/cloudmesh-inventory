@@ -434,7 +434,7 @@ class HostCommand(PluginCommand):
             names = arguments.NAMES
             user = arguments.user
 
-            if not os.path.isfile(file):
+            if not os.path.isfile(filename):
                 Console.error("The file does not exist")
                 return ""
 
@@ -447,7 +447,7 @@ class HostCommand(PluginCommand):
             else:
                 Console.info('SCP to ./temp_authorzied_keys_temp')
                 result = Host.put(hosts=names,
-                                  source=file,
+                                  source=filename,
                                   destination="temp_authorized_keys_temp")
                 _print(result)
 
