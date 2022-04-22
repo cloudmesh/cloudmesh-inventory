@@ -3,6 +3,7 @@ import platform
 
 from pprint import pprint
 from getpass import getpass
+import textwrap
 
 from cloudmesh.common.Host import Host
 from cloudmesh.common.Printer import Printer
@@ -13,6 +14,8 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import yn_choice
+from cloudmesh.common.util import readfile
+from cloudmesh.common.util import writefile
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
@@ -40,6 +43,7 @@ class HostCommand(PluginCommand):
               host key scatter NAMES [FILE] [--user=USER]
               host key add NAMES [FILE]
               host key delete NAMES [FILE]
+              host key access NAMES [FILE] [--user=USER]
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
@@ -230,7 +234,7 @@ class HostCommand(PluginCommand):
             else:
                 pprint(results)
 
-        def get_fileanme(filename, hosts):
+        def get_filename(filename, hosts):
             if filename is not None:
                 return filename
             if type(hosts) == str:
@@ -325,7 +329,7 @@ class HostCommand(PluginCommand):
             _print(results)
 
         elif arguments.key and arguments.add:
-            filename = get_fileanme(arguments.NAMES)
+            filename = get_filename(arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -345,7 +349,7 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.delete:
             Console.ok("key delete")
-            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+            filename = get_filename(arguments.FILE, arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -372,7 +376,7 @@ class HostCommand(PluginCommand):
         elif arguments.key and arguments.setup:
 
             label = Parameter.expand(arguments.NAMES)[0]
-            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+            filename = get_filename(arguments.FILE, arguments.NAMES)
             directory = os.path.dirname(filename)
 
             if directory:
@@ -404,7 +408,7 @@ class HostCommand(PluginCommand):
 
             VERBOSE(arguments)
 
-            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+            filename = get_filename(arguments.FILE, arguments.NAMES)
 
             print(output)
 
@@ -429,7 +433,7 @@ class HostCommand(PluginCommand):
             #
 
 
-            filename = get_fileanme(arguments.FILE, arguments.NAMES)
+            filename = get_filename(arguments.FILE, arguments.NAMES)
 
             names = arguments.NAMES
             user = arguments.user
@@ -487,6 +491,66 @@ class HostCommand(PluginCommand):
                 result = Host.ssh(hosts=names,
                                   command=command)
                 _print(result)
+
+        elif arguments.key and arguments.access:
+
+            #
+            # this should be a function in Host
+            #
+
+            names = arguments.NAMES
+            user = arguments.user
+
+            filename = arguments.FILE
+            temp = path_expand("~/.cloudmesh/temp_config")
+
+            if filename:
+                config = readfile(filename)
+            else:
+                config = textwrap.dedent("""
+                Host *
+                    StrictHostKeyChecking no
+                """).strip()
+            writefile(temp,config)
+
+            if not os.path.isfile(temp):
+                Console.error("The file does not exist")
+                return ""
+
+            if not user:
+                result = Host.put(hosts=names,
+                                  source=temp,
+                                  destination=".ssh/config")
+
+                _print(result)
+            else:
+                Console.info(f'Mkdir /home/{user}/.ssh if not exist')
+                command = f'sudo mkdir -p /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+                Console.info('SCP to ./temp_config')
+                result = Host.put(hosts=names,
+                                  source=temp,
+                                  destination=".ssh/config")
+                _print(result)
+
+                Console.info(f'Chown /home/{user}/.ssh to {user}')
+                command = f'sudo chown {user}:{user} /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+                Console.info(f'Chmod /home/{user}/.ssh to 700')
+                command = f'sudo chmod 700 /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
 
         elif arguments.config and not arguments.proxy:
 
