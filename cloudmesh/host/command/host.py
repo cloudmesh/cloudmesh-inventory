@@ -53,7 +53,7 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
-              host config proxy PROXY NAMES [--append] [--StrictHostKeyChecking=no]
+              host config proxy PROXY NAMES [--append] [--StrictHostKeyChecking=no] [--ProxyJump=no]
               host ping NAMES
 
 
@@ -67,6 +67,7 @@ class HostCommand(PluginCommand):
               --output=FORMAT  the format of the output
               --port=PORT starting local port for tunnel assignment
               --StrictHostKeyChecking=no  if set to yes, strict host checking is enforced [default: no]
+              --ProxyJump=no  if set to yes, a proxyjump is performed for each worker through the manager [default: yes]
 
           Description:
 
