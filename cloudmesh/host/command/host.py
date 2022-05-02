@@ -49,7 +49,7 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
-              host config proxy PROXY NAMES [--append]
+              host config proxy PROXY NAMES [--append] [--StrictHostKeyChecking=no]
               host ping NAMES
 
 
@@ -62,6 +62,7 @@ class HostCommand(PluginCommand):
               --dryrun   shows what would be done but does not execute
               --output=FORMAT  the format of the output
               --port=PORT starting local port for tunnel assignment
+              --StrictHostKeyChecking=no  if set to yes, strict host checking is enforced [default: no]
 
           Description:
 
@@ -248,6 +249,8 @@ class HostCommand(PluginCommand):
                        'append',
                        )
         dryrun = arguments.dryrun
+
+        VERBOSE(arguments)
 
         if dryrun:
             VERBOSE(arguments)
@@ -490,12 +493,76 @@ class HostCommand(PluginCommand):
 
         elif arguments.config and not arguments.proxy:
 
+            print ("NNNNNNNN")
+
             key = arguments.key or "~/.ssh/id_rsa.pub"
             result = Host.config(hosts=arguments.NAMES,
                                  ips=arguments.IPS,
                                  username=arguments.user,
                                  key=key)
             print(result)
+
+        elif arguments.config and arguments.proxy:
+
+            print ("HHHHH")
+
+            if '@'not in arguments.PROXY or '.local' not in arguments.PROXY:
+                raise Exception('Please provide user with proxy host e.g '
+                                'pi@red.local')
+
+            user = arguments.PROXY.split('@')[0]
+            names = Parameter.expand(arguments.NAMES)
+            proxy = arguments.PROXY
+            proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
+
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
+                                f'Host {proxy_host}\n' \
+                                f'     HostName {proxy_host}.local\n' \
+                                f'     User {user}\n' \
+                                f'     StrictHostKeyChecking no\n\n'
+
+            for name in names:
+                ssh_config_template = f'Host {name}\n' \
+                                      f'     HostName {name}\n' \
+                                      f'     User {user}\n' \
+                                      f'     ProxyJump {proxy}\n' \
+                                      f'     PreferredAuthentications publickey\n' \
+                                      f'     StrictHostKeyChecking no\n\n'
+
+                ssh_config_output += ssh_config_template
+
+            ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
+
+            print('Adding to ~/.ssh/config')
+            print(ssh_config_output)
+
+            if not os.path.exists(path_expand('~/.ssh/config')):
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    f.write(ssh_config_output)
+            else:
+                f = open(path_expand('~/.ssh/config'), 'r')
+                lines = f.readlines()
+                f.close()
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    if '##### CLOUDMESH PROXY CONFIG #####\n' in lines:
+                        start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                        lines.reverse()
+                        end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                        end = len(lines) - end - 1
+                        lines.reverse()
+                        original_config = lines[start:end + 1]
+                        del lines[start:end + 1]
+                        f.writelines(lines)
+                        if arguments.append:
+                            f.writelines(original_config)
+                            f.write(ssh_config_output)
+                        else:
+                            f.write(ssh_config_output)
+                    else:
+                        f.writelines(lines)
+                        f.write(ssh_config_output)
+                        f.close()
+
 
         elif arguments.check:
 
@@ -507,6 +574,7 @@ class HostCommand(PluginCommand):
                 entry['success'] = entry['stdout'] == entry['host']
 
             _print(result)
+
 
         elif arguments.tunnel and arguments.create:
 
@@ -700,63 +768,6 @@ class HostCommand(PluginCommand):
                 )
                 _print(results)
 
-        elif arguments.config and arguments.proxy:
 
-            if '@'not in arguments.PROXY or '.local' not in arguments.PROXY:
-                raise Exception('Please provide user with proxy host e.g '
-                                'pi@red.local')
-
-            user = arguments.PROXY.split('@')[0]
-            names = Parameter.expand(arguments.NAMES)
-            proxy = arguments.PROXY
-            proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
-
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
-                                f'Host {proxy_host}\n' \
-                                f'     HostName {proxy_host}.local\n' \
-                                f'     User {user}\n' \
-                                f'     StrictHostKeyChecking no\n\n'
-
-            for name in names:
-                ssh_config_template = f'Host {name}\n' \
-                                      f'     HostName {name}\n' \
-                                      f'     User {user}\n' \
-                                      f'     ProxyJump {proxy}\n' \
-                                      f'     PreferredAuthentications publickey\n' \
-                                      f'     StrictHostKeyChecking no\n\n'
-
-                ssh_config_output += ssh_config_template
-
-            ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
-
-            print('Adding to ~/.ssh/config')
-            print(ssh_config_output)
-
-            if not os.path.exists(path_expand('~/.ssh/config')):
-                with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    f.write(ssh_config_output)
-            else:
-                f = open(path_expand('~/.ssh/config'), 'r')
-                lines = f.readlines()
-                f.close()
-                with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    if '##### CLOUDMESH PROXY CONFIG #####\n' in lines:
-                        start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
-                        lines.reverse()
-                        end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
-                        end = len(lines) - end - 1
-                        lines.reverse()
-                        original_config = lines[start:end + 1]
-                        del lines[start:end + 1]
-                        f.writelines(lines)
-                        if arguments.append:
-                            f.writelines(original_config)
-                            f.write(ssh_config_output)
-                        else:
-                            f.write(ssh_config_output)
-                    else:
-                        f.writelines(lines)
-                        f.write(ssh_config_output)
-                        f.close()
 
         return ""
