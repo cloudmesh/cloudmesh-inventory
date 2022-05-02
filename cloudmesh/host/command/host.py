@@ -35,7 +35,9 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
-              host config NAMES [IPS] [--user=USER] [--key=PUBLIC]
+              host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
+              host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+              host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
               host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
@@ -54,7 +56,6 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
-              host config proxy PROXY NAMES [--append] [--StrictHostKeyChecking=no]
               host ping NAMES
 
 
@@ -64,9 +65,12 @@ class HostCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              --dryrun   shows what would be done but does not execute
+              --dryrun         shows what would be done but does not execute
               --output=FORMAT  the format of the output
-              --port=PORT starting local port for tunnel assignment
+              --port=PORT      starting local port for tunnel assignment
+              --local=no       do not append .local to manager hostname [default: yes]
+              --user=USER      username for manager and workers
+              --ips=IPS        ip addresses of the manager and workers
               --StrictHostKeyChecking=no  if set to yes, strict host checking is enforced [default: no]
 
           Description:
@@ -252,7 +256,10 @@ class HostCommand(PluginCommand):
                        'user',
                        'port',
                        'append',
-                       'StrictHostKeyChecking'
+                       'StrictHostKeyChecking',
+                       'local',
+                       'proxy',
+                       'ips'
                        )
         dryrun = arguments.dryrun
 
@@ -557,7 +564,7 @@ class HostCommand(PluginCommand):
                 _print(result)
 
 
-        elif arguments.config and not arguments.proxy:
+        elif arguments.config and arguments.ips:
 
             print ("NNNNNNNN")
 
@@ -568,33 +575,67 @@ class HostCommand(PluginCommand):
                                  key=key)
             print(result)
 
-        elif arguments.config and arguments.proxy:
+            """
+            host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
+            host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+            host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+            """
 
-            print ("HHHHH")
-
-            if '@'not in arguments.PROXY or '.local' not in arguments.PROXY:
-                raise Exception('Please provide user with proxy host e.g '
-                                'pi@red.local')
-
-            user = arguments.PROXY.split('@')[0]
-            names = Parameter.expand(arguments.NAMES)
-            proxy = arguments.PROXY
-            proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
+        elif arguments.config:
+            arguments.local = str_bool(arguments.local)
+            if arguments.local:
+                local_str = ".local"
+            else:
+                local_str = ""
             strict_host_checking = str_bool(arguments.StrictHostKeyChecking)
+            if strict_host_checking:
+                strict_host_str = "yes"
+            else:
+                strict_host_str = "no"
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.user
 
+            if arguments.proxy:
+                proxy = arguments.PROXY
+                proxy_host = arguments.PROXY + local_str
+
+            elif arguments.noproxy:
+                proxy_jump = False
+
+            if str_bool(arguments.StrictHostKeyChecking):
+                
+                proxy_jump = str_bool(arguments.ProxyJump)
+            if proxy_jump:
+                proxy_jump = f'     ProxyJump {proxy}\n'
+            else:
+                proxy_jump = ""
+
+            """
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
                                 f'Host {proxy_host}\n' \
-                                f'     HostName {proxy_host}.local\n' \
+                                f'     HostName {proxy_host}{local_str}\n' \
                                 f'     User {user}\n' \
                                 f'     StrictHostKeyChecking no\n\n'
+            """
+            if not arguments.noproxy:
 
+                ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n' \
+                                    f'Host {proxy_host}\n' \
+                                    f'     HostName {proxy_host}{local_str}\n' \
+                                    f'     User {user}\n' \
+                                    f'     StrictHostKeyChecking {strict_host_str}\n'
+                ssh_config_output += '\n'
+
+            ### the local_str in the hostname may be wrong since its not manager
             for name in names:
                 ssh_config_template = f'Host {name}\n' \
-                                      f'     HostName {name}\n' \
+                                      f'     HostName {name}{local_str}\n' \
                                       f'     User {user}\n' \
-                                      f'     ProxyJump {proxy}\n' \
-                                      f'     PreferredAuthentications publickey\n' \
-                                      f'     StrictHostKeyChecking no\n\n'
+                                      f'     PreferredAuthentications publickey\n' + \
+                                      f'     StrictHostKeyChecking {strict_host_str}\n' + \
+                                      proxy_jump
+
+                ssh_config_template += '\n'
 
                 ssh_config_output += ssh_config_template
 
