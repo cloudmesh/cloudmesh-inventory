@@ -583,40 +583,33 @@ class HostCommand(PluginCommand):
             """
 
         elif arguments.config:
-            arguments.local = str_bool(arguments.local)
-            if arguments.local:
+
+            if str_bool(arguments.local):
                 local_str = ".local"
             else:
                 local_str = ""
-            strict_host_checking = str_bool(arguments.StrictHostKeyChecking)
-            if strict_host_checking:
+
+            if str_bool(arguments.StrictHostKeyChecking):
                 strict_host_str = "yes"
             else:
                 strict_host_str = "no"
+
             names = Parameter.expand(arguments.NAMES)
             user = arguments.user
 
             if arguments.proxy:
-                proxy = arguments.PROXY
-                proxy_host = arguments.PROXY + local_str
-
+                proxy_host = arguments.proxy
+                proxy_jump = f'     ProxyJump {proxy_host}\n'
             elif arguments.noproxy:
-                proxy_jump = False
-
-            if str_bool(arguments.StrictHostKeyChecking):
-                
-                proxy_jump = str_bool(arguments.ProxyJump)
-            if proxy_jump:
-                proxy_jump = f'     ProxyJump {proxy}\n'
-            else:
                 proxy_jump = ""
 
-            """
+
+            f"""
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
                                 f'Host {proxy_host}\n' \
                                 f'     HostName {proxy_host}{local_str}\n' \
                                 f'     User {user}\n' \
-                                f'     StrictHostKeyChecking no\n\n'
+                                f'     StrictHostKeyChecking {strict_host_str}\n\n'
             """
             if not arguments.noproxy:
 
