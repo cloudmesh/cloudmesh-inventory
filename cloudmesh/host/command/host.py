@@ -16,6 +16,7 @@ from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import yn_choice
 from cloudmesh.common.util import readfile
 from cloudmesh.common.util import writefile
+from cloudmesh.common.util import str_bool
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
@@ -251,6 +252,7 @@ class HostCommand(PluginCommand):
                        'user',
                        'port',
                        'append',
+                       'StrictHostKeyChecking'
                        )
         dryrun = arguments.dryrun
 
@@ -578,6 +580,7 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
             proxy = arguments.PROXY
             proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
+            strict_host_checking = str_bool(arguments.StrictHostKeyChecking)
 
             ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
                                 f'Host {proxy_host}\n' \
