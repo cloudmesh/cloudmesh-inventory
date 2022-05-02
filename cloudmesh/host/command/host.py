@@ -597,28 +597,28 @@ class HostCommand(PluginCommand):
             names = Parameter.expand(arguments.NAMES)
             user = arguments.user
 
+            ssh_config_output = ""
             if arguments.proxy:
                 proxy_host = arguments.proxy
                 proxy_jump = f'     ProxyJump {proxy_host}\n'
-            elif arguments.noproxy:
-                proxy_jump = ""
-
-
-            f"""
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
-                                f'Host {proxy_host}\n' \
-                                f'     HostName {proxy_host}{local_str}\n' \
-                                f'     User {user}\n' \
-                                f'     StrictHostKeyChecking {strict_host_str}\n\n'
-            """
-            if not arguments.noproxy:
-
                 ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n' \
                                     f'Host {proxy_host}\n' \
                                     f'     HostName {proxy_host}{local_str}\n' \
                                     f'     User {user}\n' \
                                     f'     StrictHostKeyChecking {strict_host_str}\n'
                 ssh_config_output += '\n'
+
+            else:
+                proxy_jump = ""
+
+
+            """
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
+                                f'Host {proxy_host}\n' \
+                                f'     HostName {proxy_host}{local_str}\n' \
+                                f'     User {user}\n' \
+                                f'     StrictHostKeyChecking {strict_host_str}\n\n'
+            """
 
             ### the local_str in the hostname may be wrong since its not manager
             for name in names:
