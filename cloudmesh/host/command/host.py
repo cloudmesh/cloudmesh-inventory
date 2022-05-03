@@ -583,49 +583,55 @@ class HostCommand(PluginCommand):
             """
 
         elif arguments.config:
+
+            # this following line turns red0[1-4]
+            # into red01, red02, and so on. it is NAMES.
+            names = Parameter.expand(arguments.NAMES)
+
             arguments.local = str_bool(arguments.local)
             if arguments.local:
                 local_str = ".local"
             else:
                 local_str = ""
+
             strict_host_checking = str_bool(arguments.StrictHostKeyChecking)
             if strict_host_checking:
                 strict_host_str = "yes"
             else:
                 strict_host_str = "no"
-            names = Parameter.expand(arguments.NAMES)
-            user = arguments.user
+
+            # user is, for example, pi in pi@red.local. we default to pi
+            if not arguments.user:
+                user = 'pi'
+            else:
+                user = arguments.user
+
+            if arguments.proxy and arguments.user:
+                added_proxy_str = f'{arguments.user}@{arguments.proxy}{local_str}'
+            if arguments.proxy and not arguments.user:
+                added_proxy_str = f'{user}@{arguments.proxy}{local_str}'
+            if not arguments.proxy:
+                added_proxy_str = ''
 
             if arguments.proxy:
-                proxy = arguments.PROXY
-                proxy_host = arguments.PROXY + local_str
-
-            elif arguments.noproxy:
-                proxy_jump = False
-
-            if str_bool(arguments.StrictHostKeyChecking):
-                
-                proxy_jump = str_bool(arguments.ProxyJump)
-            if proxy_jump:
-                proxy_jump = f'     ProxyJump {proxy}\n'
+                proxy_jump = f'     ProxyJump {added_proxy_str}\n'
+                proxy_host = arguments.proxy
             else:
-                proxy_jump = ""
+                proxy_jump = ''
+                proxy_host = names[0]
 
-            """
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
+            # we subtract the first element from names if theres no proxy
+            # because we dont want an extra manager in the configuration
+            # file
+            if not arguments.proxy:
+                del names[0]
+
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n' \
                                 f'Host {proxy_host}\n' \
                                 f'     HostName {proxy_host}{local_str}\n' \
                                 f'     User {user}\n' \
-                                f'     StrictHostKeyChecking no\n\n'
-            """
-            if not arguments.noproxy:
-
-                ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n' \
-                                    f'Host {proxy_host}\n' \
-                                    f'     HostName {proxy_host}{local_str}\n' \
-                                    f'     User {user}\n' \
-                                    f'     StrictHostKeyChecking {strict_host_str}\n'
-                ssh_config_output += '\n'
+                                f'     StrictHostKeyChecking {strict_host_str}\n'
+            ssh_config_output += '\n'
 
             ### the local_str in the hostname may be wrong since its not manager
             for name in names:
