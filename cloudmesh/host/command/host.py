@@ -36,8 +36,8 @@ class HostCommand(PluginCommand):
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
               host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
-              host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
-              host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+              host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
+              host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
               host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
@@ -261,7 +261,8 @@ class HostCommand(PluginCommand):
                        'StrictHostKeyChecking',
                        'local',
                        'proxy',
-                       'ips'
+                       'ips',
+                       'cluster'
                        )
         dryrun = arguments.dryrun
 
@@ -611,13 +612,19 @@ class HostCommand(PluginCommand):
 
             names = Parameter.expand(arguments.NAMES)
             user = arguments.user
+            if arguments.cluster:
+                cluster = arguments.cluster
+            else:
+                # take the first name and remove spaces
+                cluster = ''.join([i for i in names[0] if not i.isdigit()])
+
 
             ssh_config_output = ""
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG {cluster} #####\n\n'
 
             if arguments.proxy:
                 proxy_host = arguments.proxy
-                proxy_jump = f'     ProxyJump {proxy_host}\n' 
+                proxy_jump = f'     ProxyJump {proxy_host}\n'
                 ssh_config_output += \
                                     f'Host {proxy_host}\n' \
                                     f'     HostName {proxy_host}{local_str}\n' \
@@ -631,7 +638,7 @@ class HostCommand(PluginCommand):
 
 
             """
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'\
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG {cluster} #####\n\n'\
                                 f'Host {proxy_host}\n' \
                                 f'     HostName {proxy_host}{local_str}\n' \
                                 f'     User {user}\n' \
@@ -651,7 +658,7 @@ class HostCommand(PluginCommand):
 
                 ssh_config_output += ssh_config_template
 
-            ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
+            ssh_config_output += f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n'
 
             print('Adding to ~/.ssh/config')
             print(ssh_config_output)
@@ -664,10 +671,10 @@ class HostCommand(PluginCommand):
                 lines = f.readlines()
                 f.close()
                 with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    if '##### CLOUDMESH PROXY CONFIG #####\n' in lines:
-                        start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                    if f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n' in lines:
+                        start = lines.index(f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n')
                         lines.reverse()
-                        end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
+                        end = lines.index(f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n')
                         end = len(lines) - end - 1
                         lines.reverse()
                         original_config = lines[start:end + 1]
