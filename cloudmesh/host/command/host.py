@@ -57,6 +57,7 @@ class HostCommand(PluginCommand):
               host addsudo NAMES USER
               host deluser NAMES USER
               host ping NAMES
+              host info NAMES
 
 
           This command does some useful things.
@@ -69,7 +70,7 @@ class HostCommand(PluginCommand):
               --output=FORMAT  the format of the output
               --port=PORT      starting local port for tunnel assignment
               --local=no       do not append .local to manager hostname [default: yes]
-              --user=USER      username for manager and workers
+              --user=USER      username for manager and workers [default: pi]
               --ips=IPS        ip addresses of the manager and workers
               --StrictHostKeyChecking=no  if set to yes, strict host checking is enforced [default: no]
               --ProxyJump=no  if set to yes, a proxyjump is performed for each worker through the manager [default: yes]
@@ -268,6 +269,20 @@ class HostCommand(PluginCommand):
 
         if dryrun:
             VERBOSE(arguments)
+
+        if arguments.info:
+
+            names = Parameter.expand(arguments.names)
+
+            # check if .local
+            # check if mesh network
+            # check if static network
+
+            # use arp - a di find hosts ips
+            # if linux
+            #    dig +short -x  192.168.50.1
+
+            Console.error("Not yet Implemented")
 
         if arguments.mac:
 
@@ -598,13 +613,15 @@ class HostCommand(PluginCommand):
             user = arguments.user
 
             ssh_config_output = ""
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n'
+
             if arguments.proxy:
                 proxy_host = arguments.proxy
                 proxy_jump = f'     ProxyJump {proxy_host}\n'
-                ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n\n' \
                                     f'Host {proxy_host}\n' \
                                     f'     HostName {proxy_host}{local_str}\n' \
                                     f'     User {user}\n' \
+                                    f'     PreferredAuthentications publickey\n' + \
                                     f'     StrictHostKeyChecking {strict_host_str}\n'
                 ssh_config_output += '\n'
 
