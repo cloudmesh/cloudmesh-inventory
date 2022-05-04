@@ -617,7 +617,8 @@ class HostCommand(PluginCommand):
 
             if arguments.proxy:
                 proxy_host = arguments.proxy
-                proxy_jump = f'     ProxyJump {proxy_host}\n'
+                proxy_jump = f'     ProxyJump {proxy_host}\n' \
+                ssh_config_output += \
                                     f'Host {proxy_host}\n' \
                                     f'     HostName {proxy_host}{local_str}\n' \
                                     f'     User {user}\n' \
