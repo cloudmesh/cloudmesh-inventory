@@ -38,6 +38,7 @@ class HostCommand(PluginCommand):
               host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
               host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
               host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
+              host find [NAMES] [--user=USER] [--table|--json] [--verbose]
               host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
@@ -242,6 +243,19 @@ class HostCommand(PluginCommand):
             else:
                 pprint(results)
 
+        def _print_pis(results):
+            arguments.output = arguments.output or 'table'
+
+            if arguments.output in ['table', 'yaml']:
+                print(Printer.write(results,
+                                    order=['name', 'ip', 'user', 'os', 'mac', 'model', 'memory', 'serial'],
+                                    output=arguments.output))
+                # not printed         "revision"
+                # not printed         "hardware"
+            else:
+                pprint(results)
+
+
         def get_filename(filename, hosts):
             if filename is not None:
                 return filename
@@ -266,7 +280,7 @@ class HostCommand(PluginCommand):
                        )
         dryrun = arguments.dryrun
 
-        VERBOSE(arguments)
+        # VERBOSE(arguments)
 
         if dryrun:
             VERBOSE(arguments)
@@ -285,7 +299,24 @@ class HostCommand(PluginCommand):
 
             Console.error("Not yet Implemented")
 
-        if arguments.mac:
+        elif arguments.find:
+
+            verbose = arguments["--verbose"]
+
+            names = Parameter.expand(arguments.NAMES)
+
+            # temporary so we can easy modify while not needing to update cloudmesh.common
+            from cloudmesh.host.network import PiNetwork
+
+            network = PiNetwork()
+
+            pis = network.find_pis(user=arguments.user, verbose=verbose)
+            if arguments["--json"]:
+                print(pis)
+            else:
+                _print_pis (pis)
+
+        elif arguments.mac:
 
             names = Parameter.expand(arguments.NAMES)
 
