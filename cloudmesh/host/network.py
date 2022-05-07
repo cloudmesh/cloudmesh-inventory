@@ -21,6 +21,17 @@ class PiNetwork:
         return ips
 
     def find_pis(self, user="pi", verbose=False):
+        """
+        CHeck all ips if they are a pi with a pi user
+
+        Args:
+            user (str): the username used to ssh into the ip
+            verbose (bool): print some debug messages
+
+        Returns:
+            A dict with information about the ips that were identified as PI
+
+        """
         self.verbose = verbose
         data = []
         ips = self.arp()
@@ -33,12 +44,34 @@ class PiNetwork:
         return data
 
     def _ssh(self, command, timeout=1):
+        """
+        An internal ssh command that allows to ssh into a remote host while having a small timeout value
+
+        Args:
+            command (str): the command to be executed
+            timeout (int): the number of seconds for a timeout
+
+        Returns:
+            the result of the executed command as a string.
+            It ignores errors and includes them into the result string.
+
+        """
         _command = f"ssh -o ConnectTimeout={timeout} -o StrictHostKeyChecking=no {command}"
         # print (_command)
         r = Shell.run(_command).strip()
         return r
 
     def is_pi4(self, ip, user="pi"):
+        """
+        Checks if the ip given can be logged into
+
+        Args:
+            ip (str): The ip number
+            user (str): The username which is used to login
+
+        Returns:
+            A dict with information about the host
+        """
         r = self._ssh(f"{user}@{ip} ip a")
         if "Connection timed out" in r:
             if self.verbose:
@@ -84,7 +117,6 @@ class PiNetwork:
 
         find_local = self._ssh(f"{user}@{name}.local hostname")
         data[".local"] = find_local == name
-
 
         return data
 
