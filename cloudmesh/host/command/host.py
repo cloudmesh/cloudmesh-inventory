@@ -248,7 +248,7 @@ class HostCommand(PluginCommand):
 
             if arguments.output in ['table', 'yaml']:
                 print(Printer.write(results,
-                                    order=['name', 'ip', 'user', 'os', 'mac', 'model', 'memory', 'serial'],
+                                    order=['name', 'ip', 'user', 'os', 'mac', 'model', 'memory', 'serial', ".local"],
                                     output=arguments.output))
                 # not printed         "revision"
                 # not printed         "hardware"

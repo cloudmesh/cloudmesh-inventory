@@ -63,13 +63,14 @@ class PiNetwork:
             "revision": None,
             "serial": None,
             "memory": None,
-            "hardware": None
+            "hardware": None,
+            ".local": None
         }
 
         if "dc:a6:32" in r:
             data["pi"] = True
         data["mac"] = self._ssh(f"{user}@{ip} cat /sys/class/net/eth0/address")
-        data["name"] = self._ssh(f"{user}@{ip} hostname")
+        name= data["name"] = self._ssh(f"{user}@{ip} hostname")
         data["model"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/model").replace("\x00", "")\
             .replace("Raspberry ", "").replace("Model ", "").replace("Rev ","")
         data["serial"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/serial-number").replace("\x00", "")
@@ -80,6 +81,10 @@ class PiNetwork:
         cpuinfo = self._ssh(f"{user}@{ip} cat /proc/cpuinfo").replace("\t", "")
         data["revision"] = Shell.cm_grep(cpuinfo, "Revision")[0].split(":")[1]
         data["hardware"] = Shell.cm_grep(cpuinfo, "Hardware")[0].split(":")[1]
+
+        find_local = self._ssh(f"{user}@{name}.local hostname")
+        data[".local"] = find_local == name
+
 
         return data
 
