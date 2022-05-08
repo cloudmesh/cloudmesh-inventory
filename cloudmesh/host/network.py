@@ -1,5 +1,9 @@
 from cloudmesh.common.Shell import Shell
 from cloudmesh.common.console import Console
+from cloudmesh.common.systeminfo import os_is_windows
+from cloudmesh.common.Host import Host
+from cloudmesh.common.Printer import Printer
+import re
 
 class PiNetwork:
 
@@ -13,11 +17,26 @@ class PiNetwork:
         Returns: list of ips in the network
         """
         ips = []
-        lines = Shell.run("arp -a").strip().splitlines()
-        for line in lines:
-            if "(" in line:
-                ip = line.split("(")[1].split(")")[0]
-                ips.append(ip)
+        if os_is_windows:
+            lines = Shell.run("arp -a")
+            _, ip, _, phy, _ = lines.split(maxsplit=4)
+            listofarp = Shell.run("arp -a").strip().splitlines()
+            fixedlist = [elem.strip() for elem in listofarp]
+            fixedlist = [x for x in fixedlist if not x.startswith("Interface:")]
+            fixedlist = [x.split() for x in fixedlist]
+            fixedlist = [item for sublist in fixedlist for item in sublist]
+            pattern = re.compile(r"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)(\.(?!$)|$)){4}$")
+            ips = []
+            for i in fixedlist:
+                if pattern.findall(i):
+                    ips.append(i)
+            print(ips)
+        else:
+            lines = Shell.run("arp -a").strip().splitlines()
+            for line in lines:
+                if "(" in line:
+                    ip = line.split("(")[1].split(")")[0]
+                    ips.append(ip)
         return ips
 
     def find_pis(self, user="pi", verbose=False):
@@ -58,7 +77,18 @@ class PiNetwork:
         """
         _command = f"ssh -o ConnectTimeout={timeout} -o StrictHostKeyChecking=no {command}"
         # print (_command)
-        r = Shell.run(_command).strip()
+        if os_is_windows:
+            import subprocess
+            hostname = subprocess.run(['hostname'],
+                                     capture_output=True,
+                                     text=True).stdout.strip()
+            results = Host.ssh(hosts=hostname, command=_command)
+            print(Printer.write(results))
+            for entry in results:
+                print(str(entry["stdout"]))
+                r = str(entry["stdout"])
+        else:
+            r = Shell.run(_command).strip()
         return r
 
     def is_pi4(self, ip, user="pi"):
@@ -75,11 +105,15 @@ class PiNetwork:
         r = self._ssh(f"{user}@{ip} ip a")
         if "Connection timed out" in r:
             if self.verbose:
-                Console.error(f"{user}@{ip} Timeout")
+                Console.error(f"{user}@{ip} timeout")
             r = None
         elif "Connection refused" in r:
             if self.verbose:
                 Console.error(f"{user}@{ip} refused")
+            r = None
+        elif "Cannot assign requested address" in r:
+            if self.verbose:
+                Console.error(f"{user}@{ip} was not a valid device")
             r = None
         if r is None:
             return r
@@ -100,14 +134,15 @@ class PiNetwork:
             ".local": None
         }
 
-        if "dc:a6:32" in r:
+        if ("dc:a6:32" or "b8:27:eb" or "e4:5f:01") in r:
             data["pi"] = True
         data["mac"] = self._ssh(f"{user}@{ip} cat /sys/class/net/eth0/address")
         name= data["name"] = self._ssh(f"{user}@{ip} hostname")
         data["model"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/model").replace("\x00", "")\
             .replace("Raspberry ", "").replace("Model ", "").replace("Rev ","")
         data["serial"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/serial-number").replace("\x00", "")
-        data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0]
+        if not os_is_windows:
+            data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0]
         os_version = self._ssh(f"{user}@{ip} cat /etc/os-release")
         data["os"] = Shell.cm_grep(os_version, "VERSION=")[0].split("=")[1].replace('"',"")
 
