@@ -314,7 +314,7 @@ class HostCommand(PluginCommand):
             if arguments["--json"]:
                 print(pis)
             else:
-                _print_pis (pis)
+                _print_pis(pis)
 
         elif arguments.mac:
 

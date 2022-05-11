@@ -115,6 +115,18 @@ class PiNetwork:
             if self.verbose:
                 Console.error(f"{user}@{ip} was not a valid device")
             r = None
+        elif "Cannot assign requested address" in r:
+            if self.verbose:
+                Console.error(f"{user}@{ip} was not a valid device")
+            r = None
+        elif "Unknown error" in r:
+            if self.verbose:
+                Console.error(f"{user}@{ip} had an unknown error")
+            r = None
+        elif "No such host is known" in r:
+            if self.verbose:
+                Console.error(f"{user}@{ip} is an unknown host")
+            r = None
         if r is None:
             return r
 
@@ -144,11 +156,11 @@ class PiNetwork:
         if not os_is_windows:
             data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0]
         os_version = self._ssh(f"{user}@{ip} cat /etc/os-release")
-        data["os"] = Shell.cm_grep(os_version, "VERSION=")[0].split("=")[1].replace('"',"")
-
         cpuinfo = self._ssh(f"{user}@{ip} cat /proc/cpuinfo").replace("\t", "")
-        data["revision"] = Shell.cm_grep(cpuinfo, "Revision")[0].split(":")[1]
-        data["hardware"] = Shell.cm_grep(cpuinfo, "Hardware")[0].split(":")[1]
+        if not os_is_windows:
+            data["os"] = Shell.cm_grep(os_version, "VERSION=")[0].split("=")[1].replace('"',"")
+            data["revision"] = Shell.cm_grep(cpuinfo, "Revision")[0].split(":")[1]
+            data["hardware"] = Shell.cm_grep(cpuinfo, "Hardware")[0].split(":")[1]
 
         find_local = self._ssh(f"{user}@{name}.local hostname")
         data[".local"] = find_local == name
