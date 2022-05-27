@@ -107,7 +107,7 @@ class PiNetwork:
         data["model"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/model").replace("\x00", "")\
             .replace("Raspberry ", "").replace("Model ", "").replace("Rev ","")
         data["serial"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/serial-number").replace("\x00", "")
-        data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0]
+        data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0].replace("Gi", "G")
         os_version = self._ssh(f"{user}@{ip} cat /etc/os-release")
         data["os"] = Shell.cm_grep(os_version, "VERSION=")[0].split("=")[1].replace('"',"")
 
