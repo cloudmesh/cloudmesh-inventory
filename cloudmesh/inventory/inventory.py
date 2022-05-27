@@ -256,6 +256,9 @@ class Inventory(object):
             ips = Parameter.expand(kwargs['ip'])
         else:
             ips = [None for i in hosts]
+        if ips is None:
+            ips = [None for i in hosts]
+
         for host, ip in zip(hosts, ips):
             if host in self.data:
                 entry = self.data[host]
@@ -291,7 +294,11 @@ class Inventory(object):
     def build_default_inventory(filename, manager, workers, ips=None,
                                 manager_image='latest-lite',
                                 worker_image='latest-lite',
-                                gui_images=None):
+                                gui_images=None,
+                                network= "internal"):
+        #
+        # AAA updated for mesh
+        #
         # cms inventory add red --service=manager --ip=10.1.1.1 --tag=latest-lite
         # --timezone="America/Indiana/Indianapolis" --locale="us"
         # cms inventory set red services to "bridge" --listvalue
@@ -306,7 +313,13 @@ class Inventory(object):
         i = Inventory(filename=filename)
         timezone = Shell.timezone()
         locale = Shell.locale()
-        manager_ip = ips[0] if ips else '10.1.1.1'
+        if network in ['internal']:
+            manager_ip = ips[0] if ips else '10.1.1.1'
+            dns = ['8.8.8.8', '8.8.4.4']
+        else:
+            manager_ip  = None
+            dns = None
+
         image = gui_images[0] if gui_images else manager_image
         element = {}
         element['host'] = manager
@@ -325,18 +338,22 @@ class Inventory(object):
         index = 1
         if workers is not None:
             for worker in workers:
-                ip = ips[index] if ips else f'10.1.1.{last_octet}'
+                if network in ['internal']:
+                    ip = ips[index] if ips else f'10.1.1.{last_octet}'
+                else:
+                    ip = None
                 image = gui_images[index] if gui_images else worker_image
                 element = {}
                 element['host'] = worker
                 element['status'] = 'inactive'
                 element['service'] = 'worker'
+                element['network'] = network
                 element['ip'] = ip
                 element['tag'] = image
                 element['timezone'] = timezone
                 element['locale'] = locale
                 element['router'] = manager_ip
-                element['dns'] = ['8.8.8.8', '8.8.4.4']
+                element['dns'] = dns
                 element['keyfile'] = '~/.ssh/id_rsa.pub'
                 i.add(**element)
                 i.save()

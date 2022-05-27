@@ -140,17 +140,29 @@ If you like to see fetures added or find bugs, please let us know.
 <!--MANUAL-->
 ```
     inventory add NAMES [--label=LABEL]
-                        [--service=SERVICES]
+                        [--services=SERVICES]
                         [--project=PROJECT]
                         [--owners=OWNERS]
                         [--comment=COMMENT]
+                        [--inventory=INVENTORY]
                         [--cluster=CLUSTER]
                         [--ip=IP]
-    inventory set NAMES ATTRIBUTE to VALUES
-    inventory delete NAMES
-    inventory clone NAMES from SOURCE
-    inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS]
-    inventory info
+                        [--service=SERVICE]
+                        [--tag=TAG]
+                        [--keyfile=KEYFILE]
+                        [--router=ROUTER]
+                        [--locale=LOCALE]
+                        [--timezone=TIMEZONE]
+    inventory create TAG [--hostnames=NAMES]
+                         [--ip=IP]
+                         [--inventory=INVENTORY]
+                         [--keyfile=KEYFILE]
+    inventory set NAMES ATTRIBUTE to VALUES [--inventory=INVENTORY] [--listvalue]
+    inventory delete NAMES [--inventory=INVENTORY]
+    inventory clone NAMES from SOURCE [--inventory=INVENTORY]
+    inventory list [NAMES] [--format=FORMAT] [--columns=COLUMNS] [--inventory=INVENTORY]
+    inventory info [--inventory=INVENTORY]
+    inventory remove --inventory=INVENTORY
 
 Arguments:
   NAMES     Name of the resources (example i[10-20])
@@ -165,6 +177,7 @@ Arguments:
 
 Options:
    -v       verbose mode
+   --keyfile=KEYFILE      Keyfile to assign [default: ~/.ssh/id_rsa.pub]
 
 Description:
 
@@ -186,20 +199,23 @@ Examples:
       adds hosts x0, x1, x2, x3 and puts the string
       openstack into the service column
 
-  cms inventory lists
+  cms inventory list
       lists the repository
 
-  cms inventory x[3-4] set temperature to 32
+  cms inventory set x[3-4] temperature to 32
       sets for the resources x3, x4 the value of the
       temperature to 32
 
-  cms inventory x[7-8] set ip 128.0.0.[0-1]
+  cms inventory set x[7-8] ip to 128.0.0.[0-1]
       sets the value of x7 to 128.0.0.0
       sets the value of x8 to 128.0.0.1
+
+  cms inventory set x1 services to bridge,kubernetes --listvalue
+      sets the value of x1 to [bridge, kubernetes]
+      The --listvalue option indicates the value set is a list
 
   cms inventory clone x[5-6] from x3
       clones the values for x5, x6 from x3
 
 ```
 <!--MANUAL-->
-

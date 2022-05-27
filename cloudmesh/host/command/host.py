@@ -3,6 +3,7 @@ import platform
 
 from pprint import pprint
 from getpass import getpass
+import textwrap
 
 from cloudmesh.common.Host import Host
 from cloudmesh.common.Printer import Printer
@@ -13,6 +14,9 @@ from cloudmesh.common.parameter import Parameter
 from cloudmesh.common.util import banner
 from cloudmesh.common.util import path_expand
 from cloudmesh.common.util import yn_choice
+from cloudmesh.common.util import readfile
+from cloudmesh.common.util import writefile
+from cloudmesh.common.util import str_bool
 from cloudmesh.shell.command import PluginCommand
 from cloudmesh.shell.command import command
 from cloudmesh.shell.command import map_parameters
@@ -31,14 +35,19 @@ class HostCommand(PluginCommand):
           Usage:
               host scp NAMES SOURCE DESTINATION [--dryrun]
               host ssh NAMES COMMAND [--dryrun] [--output=FORMAT]
-              host config NAMES [IPS] [--user=USER] [--key=PUBLIC]
+              host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
+              host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
+              host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no] [--cluster=name]
+              host find [NAMES] [--user=USER] [--table|--json] [--verbose]
               host check NAMES [--user=USER] [--key=PUBLIC]
               host key create NAMES [--user=USER] [--dryrun] [--output=FORMAT]
               host key list NAMES [--output=FORMAT]
+              host key setup NAMES
               host key gather NAMES [--authorized_keys] [FILE]
-              host key scatter NAMES FILE [--user=USER]
-              host key add NAMES FILE
-              host key delete NAMES FILE
+              host key scatter NAMES [FILE] [--user=USER]
+              host key add NAMES [FILE]
+              host key delete NAMES [FILE]
+              host key access NAMES [FILE] [--user=USER]
               host tunnel create NAMES [--port=PORT]
               host mac NAMES [--eth] [--wlan] [--output=FORMAT]
               host setup WORKERS [LAPTOP]
@@ -48,7 +57,8 @@ class HostCommand(PluginCommand):
               host passwd NAMES USER
               host addsudo NAMES USER
               host deluser NAMES USER
-              host config proxy PROXY NAMES [--append]
+              host ping NAMES
+              host info NAMES
 
 
           This command does some useful things.
@@ -57,9 +67,14 @@ class HostCommand(PluginCommand):
               FILE   a file name
 
           Options:
-              --dryrun   shows what would be done but does not execute
+              --dryrun         shows what would be done but does not execute
               --output=FORMAT  the format of the output
-              --port=PORT starting local port for tunnel assignment
+              --port=PORT      starting local port for tunnel assignment
+              --local=no       do not append .local to manager hostname [default: yes]
+              --user=USER      username for manager and workers [default: pi]
+              --ips=IPS        ip addresses of the manager and workers
+              --StrictHostKeyChecking=no  if set to yes, strict host checking is enforced [default: no]
+              --ProxyJump=no  if set to yes, a proxyjump is performed for each worker through the manager [default: yes]
 
           Description:
 
@@ -223,10 +238,31 @@ class HostCommand(PluginCommand):
 
             if arguments.output in ['table', 'yaml']:
                 print(Printer.write(results,
-                                    order=['host', 'success', 'stdout'],
+                                    order=['host', 'success', 'stdout', 'stderr'],
                                     output=arguments.output))
             else:
                 pprint(results)
+
+        def _print_pis(results):
+            arguments.output = arguments.output or 'table'
+
+            if arguments.output in ['table', 'yaml']:
+                print(Printer.write(results,
+                                    order=['name', 'ip', 'user', 'os', 'mac', 'model', 'memory', 'serial', ".local"],
+                                    output=arguments.output))
+                # not printed         "revision"
+                # not printed         "hardware"
+            else:
+                pprint(results)
+
+
+        def get_filename(filename, hosts):
+            if filename is not None:
+                return filename
+            if type(hosts) == str:
+                hosts = Parameter.expand(hosts)
+            label = hosts[0]
+            return path_expand(f"~/.ssh/cluster_keys_{label}")
 
         map_parameters(arguments,
                        'eth',
@@ -236,13 +272,51 @@ class HostCommand(PluginCommand):
                        'user',
                        'port',
                        'append',
+                       'StrictHostKeyChecking',
+                       'local',
+                       'proxy',
+                       'ips',
+                       'cluster'
                        )
         dryrun = arguments.dryrun
+
+        # VERBOSE(arguments)
 
         if dryrun:
             VERBOSE(arguments)
 
-        if arguments.mac:
+        if arguments.info:
+
+            names = Parameter.expand(arguments.names)
+
+            # check if .local
+            # check if mesh network
+            # check if static network
+
+            # use arp - a di find hosts ips
+            # if linux
+            #    dig +short -x  192.168.50.1
+
+            Console.error("Not yet Implemented")
+
+        elif arguments.find:
+
+            verbose = arguments["--verbose"]
+
+            names = Parameter.expand(arguments.NAMES)
+
+            # temporary so we can easy modify while not needing to update cloudmesh.common
+            from cloudmesh.host.network import PiNetwork
+
+            network = PiNetwork()
+
+            pis = network.find_pis(user=arguments.user, verbose=verbose)
+            if arguments["--json"]:
+                print(pis)
+            else:
+                _print_pis(pis)
+
+        elif arguments.mac:
 
             names = Parameter.expand(arguments.NAMES)
 
@@ -277,6 +351,15 @@ class HostCommand(PluginCommand):
 
             _print(result)
 
+        elif arguments.ping:
+            names = Parameter.expand(arguments.NAMES)
+
+            # print (names)
+
+            results = Host.ping(hosts=names)
+
+            _print(results)
+
         elif arguments.ssh:
             names = Parameter.expand(arguments.NAMES)
 
@@ -306,7 +389,7 @@ class HostCommand(PluginCommand):
             _print(results)
 
         elif arguments.key and arguments.add:
-            filename = path_expand(arguments.FILE)
+            filename = get_filename(arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -326,8 +409,7 @@ class HostCommand(PluginCommand):
 
         elif arguments.key and arguments.delete:
             Console.ok("key delete")
-            print(arguments.NAMES, arguments.FILE)
-            filename = path_expand(arguments.FILE)
+            filename = get_filename(arguments.FILE, arguments.NAMES)
             if not os.path.isfile(filename):
                 Console.error(f"Cannot find file {filename}")
                 return
@@ -350,6 +432,30 @@ class HostCommand(PluginCommand):
             )
             Console.ok(f"Delete keys from {filename} on {arguments.NAMES}")
 
+
+        elif arguments.key and arguments.setup:
+
+            label = Parameter.expand(arguments.NAMES)[0]
+            filename = get_filename(arguments.FILE, arguments.NAMES)
+            directory = os.path.dirname(filename)
+
+            if directory:
+                Shell.mkdir(directory)
+
+            output = Host.gather_keys(
+                username=arguments.user,
+                hosts=arguments.NAMES,
+                filename="~/.ssh/id_rsa.pub",
+                key="~/.ssh/id_rsa",
+                processors=3,
+                dryrun=False)
+
+            with open(filename, "w") as f:
+                f.write(output)
+
+            # scatter
+            # place .ssh/config a trict host check to no
+
         elif arguments.key and arguments.gather:
 
             output = Host.gather_keys(
@@ -360,40 +466,52 @@ class HostCommand(PluginCommand):
                 processors=3,
                 dryrun=False)
 
-            if arguments.FILE:
-                filename = path_expand(arguments.FILE)
-                directory = os.path.dirname(filename)
-                if directory:
-                    Shell.mkdir(directory)
-                if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to append?'):
-                    with open(filename, "a") as f:
-                        f.write(output)
-                else:
-                    with open(filename, "w") as f:
-                        f.write(output)
+            VERBOSE(arguments)
+
+            filename = get_filename(arguments.FILE, arguments.NAMES)
+
+            print(output)
+
+            banner(f"Writing Keys to file {filename}")
+
+            directory = os.path.dirname(filename)
+            print('command directory', directory)
+            if directory:
+                Shell.mkdir(directory)
+
+            if os.path.isfile(filename) and yn_choice(f'{filename} is not empty. Do you wish to overwrite it? (If no you will append).'):
+                with open(filename, "w") as f:
+                    f.write(output)
             else:
-                print(output)
+                with open(filename, "a") as f:
+                    f.write(output)
 
         elif arguments.key and arguments.scatter:
 
+            #
+            # this should be a function in Host
+            #
+
+
+            filename = get_filename(arguments.FILE, arguments.NAMES)
+
             names = arguments.NAMES
-            file = arguments.get("FILE")
             user = arguments.user
 
-            if not os.path.isfile(file):
+            if not os.path.isfile(filename):
                 Console.error("The file does not exist")
                 return ""
 
             if not user:
                 result = Host.put(hosts=names,
-                                  source=file,
+                                  source=filename,
                                   destination=".ssh/authorized_keys")
 
                 _print(result)
             else:
                 Console.info('SCP to ./temp_authorzied_keys_temp')
                 result = Host.put(hosts=names,
-                                  source=file,
+                                  source=filename,
                                   destination="temp_authorized_keys_temp")
                 _print(result)
 
@@ -434,7 +552,69 @@ class HostCommand(PluginCommand):
                                   command=command)
                 _print(result)
 
-        elif arguments.config and not arguments.proxy:
+        elif arguments.key and arguments.access:
+
+            #
+            # this should be a function in Host
+            #
+
+            names = arguments.NAMES
+            user = arguments.user
+
+            filename = arguments.FILE
+            temp = path_expand("~/.cloudmesh/temp_config")
+
+            if filename:
+                config = readfile(filename)
+            else:
+                config = textwrap.dedent("""
+                Host *
+                    StrictHostKeyChecking no
+                """).strip()
+            writefile(temp,config)
+
+            if not os.path.isfile(temp):
+                Console.error("The file does not exist")
+                return ""
+
+            if not user:
+                result = Host.put(hosts=names,
+                                  source=temp,
+                                  destination=".ssh/config")
+
+                _print(result)
+            else:
+                Console.info(f'Mkdir /home/{user}/.ssh if not exist')
+                command = f'sudo mkdir -p /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+                Console.info('SCP to ./temp_config')
+                result = Host.put(hosts=names,
+                                  source=temp,
+                                  destination=".ssh/config")
+                _print(result)
+
+                Console.info(f'Chown /home/{user}/.ssh to {user}')
+                command = f'sudo chown {user}:{user} /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+                Console.info(f'Chmod /home/{user}/.ssh to 700')
+                command = f'sudo chmod 700 /home/' \
+                          f'{user}/.ssh/'
+                result = Host.ssh(hosts=names,
+                                  command=command)
+                _print(result)
+
+
+        elif arguments.config and arguments.ips:
+
+            print ("NNNNNNNN")
 
             key = arguments.key or "~/.ssh/id_rsa.pub"
             result = Host.config(hosts=arguments.NAMES,
@@ -442,6 +622,105 @@ class HostCommand(PluginCommand):
                                  username=arguments.user,
                                  key=key)
             print(result)
+
+            """
+            host config NAMES --ips=IPS [--user=USER] [--key=PUBLIC]
+            host config --proxy=PROXY NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+            host config NAMES [--user=USER] [--append] [--local=no] [--StrictHostKeyChecking=no]
+            """
+
+        elif arguments.config:
+
+            if str_bool(arguments.local):
+                local_str = ".local"
+            else:
+                local_str = ""
+
+            if str_bool(arguments.StrictHostKeyChecking):
+                strict_host_str = "yes"
+            else:
+                strict_host_str = "no"
+
+            names = Parameter.expand(arguments.NAMES)
+            user = arguments.user
+            if arguments.cluster:
+                cluster = arguments.cluster
+            else:
+                # take the first name and remove spaces
+                cluster = ''.join([i for i in names[0] if not i.isdigit()])
+
+
+            ssh_config_output = ""
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG {cluster} #####\n\n'
+
+            if arguments.proxy:
+                proxy_host = arguments.proxy
+                proxy_jump = f'     ProxyJump {proxy_host}\n'
+                ssh_config_output += \
+                                    f'Host {proxy_host}\n' \
+                                    f'     HostName {proxy_host}{local_str}\n' \
+                                    f'     User {user}\n' \
+                                    f'     PreferredAuthentications publickey\n' + \
+                                    f'     StrictHostKeyChecking {strict_host_str}\n'
+                ssh_config_output += '\n'
+
+            else:
+                proxy_jump = ""
+
+
+            """
+            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG {cluster} #####\n\n'\
+                                f'Host {proxy_host}\n' \
+                                f'     HostName {proxy_host}{local_str}\n' \
+                                f'     User {user}\n' \
+                                f'     StrictHostKeyChecking {strict_host_str}\n\n'
+            """
+
+            ### the local_str in the hostname may be wrong since its not manager
+            for name in names:
+                ssh_config_template = f'Host {name}\n' \
+                                      f'     HostName {name}{local_str}\n' \
+                                      f'     User {user}\n' \
+                                      f'     PreferredAuthentications publickey\n' + \
+                                      f'     StrictHostKeyChecking {strict_host_str}\n' + \
+                                      proxy_jump
+
+                ssh_config_template += '\n'
+
+                ssh_config_output += ssh_config_template
+
+            ssh_config_output += f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n'
+
+            print('Adding to ~/.ssh/config')
+            print(ssh_config_output)
+
+            if not os.path.exists(path_expand('~/.ssh/config')):
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    f.write(ssh_config_output)
+            else:
+                f = open(path_expand('~/.ssh/config'), 'r')
+                lines = f.readlines()
+                f.close()
+                with open(path_expand('~/.ssh/config'), 'w+') as f:
+                    if f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n' in lines:
+                        start = lines.index(f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n')
+                        lines.reverse()
+                        end = lines.index(f'##### CLOUDMESH PROXY CONFIG {cluster} #####\n')
+                        end = len(lines) - end - 1
+                        lines.reverse()
+                        original_config = lines[start:end + 1]
+                        del lines[start:end + 1]
+                        f.writelines(lines)
+                        if arguments.append:
+                            f.writelines(original_config)
+                            f.write(ssh_config_output)
+                        else:
+                            f.write(ssh_config_output)
+                    else:
+                        f.writelines(lines)
+                        f.write(ssh_config_output)
+                        f.close()
+
 
         elif arguments.check:
 
@@ -453,6 +732,7 @@ class HostCommand(PluginCommand):
                 entry['success'] = entry['stdout'] == entry['host']
 
             _print(result)
+
 
         elif arguments.tunnel and arguments.create:
 
@@ -646,61 +926,6 @@ class HostCommand(PluginCommand):
                 )
                 _print(results)
 
-        elif arguments.config and arguments.proxy:
 
-            if '@'not in arguments.PROXY or '.local' not in arguments.PROXY:
-                raise Exception('Please provide user with proxy host e.g '
-                                'pi@red.local')
-
-            user = arguments.PROXY.split('@')[0]
-            names = Parameter.expand(arguments.NAMES)
-            proxy = arguments.PROXY
-            proxy_host = arguments.PROXY.split('@')[1].replace(".local", "")
-
-            ssh_config_output = f'\n##### CLOUDMESH PROXY CONFIG #####\n'\
-                                f'Host {proxy_host}\n' \
-                                f'     HostName {proxy_host}.local\n' \
-                                f'     User {user}\n' \
-                                f'     StrictHostKeyChecking no\n\n'
-
-            for name in names:
-                ssh_config_template = f'Host {name}\n' \
-                                      f'     HostName {name}\n' \
-                                      f'     User {user}\n' \
-                                      f'     ProxyJump {proxy}\n' \
-                                      f'     StrictHostKeyChecking no\n\n'
-                ssh_config_output += ssh_config_template
-
-            ssh_config_output += '##### CLOUDMESH PROXY CONFIG #####\n'
-
-            print('Adding to ~/.ssh/config')
-            print(ssh_config_output)
-
-            if not os.path.exists(path_expand('~/.ssh/config')):
-                with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    f.write(ssh_config_output)
-            else:
-                f = open(path_expand('~/.ssh/config'), 'r')
-                lines = f.readlines()
-                f.close()
-                with open(path_expand('~/.ssh/config'), 'w+') as f:
-                    if '##### CLOUDMESH PROXY CONFIG #####\n' in lines:
-                        start = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
-                        lines.reverse()
-                        end = lines.index('##### CLOUDMESH PROXY CONFIG #####\n')
-                        end = len(lines) - end - 1
-                        lines.reverse()
-                        original_config = lines[start:end + 1]
-                        del lines[start:end + 1]
-                        f.writelines(lines)
-                        if arguments.append:
-                            f.writelines(original_config)
-                            f.write(ssh_config_output)
-                        else:
-                            f.write(ssh_config_output)
-                    else:
-                        f.writelines(lines)
-                        f.write(ssh_config_output)
-                        f.close()
 
         return ""
