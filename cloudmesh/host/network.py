@@ -17,7 +17,7 @@ class PiNetwork:
         Returns: list of ips in the network
         """
         ips = []
-        if os_is_windows:
+        if os_is_windows():
             lines = Shell.run("arp -a")
             _, ip, _, phy, _ = lines.split(maxsplit=4)
             listofarp = Shell.run("arp -a").strip().splitlines()
@@ -77,7 +77,7 @@ class PiNetwork:
         """
         _command = f"ssh -o ConnectTimeout={timeout} -o StrictHostKeyChecking=no {command}"
         # print (_command)
-        if os_is_windows:
+        if os_is_windows():
             import subprocess
             hostname = subprocess.run(['hostname'],
                                      capture_output=True,
@@ -154,13 +154,13 @@ class PiNetwork:
             .replace("Raspberry ", "").replace("Model ", "").replace("Rev ","")
         data["serial"] = self._ssh(f"{user}@{ip} cat /sys/firmware/devicetree/base/serial-number").replace("\x00", "")
 
-        #if not os_is_windows:
+        #if not os_is_windows():
 
         data["memory"] = self._ssh(f"{user}@{ip} free -h -t | fgrep Total:").split("Total:")[1].strip().split(" ")[0].replace("Gi", "G")
         
         os_version = self._ssh(f"{user}@{ip} cat /etc/os-release")
         cpuinfo = self._ssh(f"{user}@{ip} cat /proc/cpuinfo").replace("\t", "")
-        if not os_is_windows:
+        if not os_is_windows():
             data["os"] = Shell.cm_grep(os_version, "VERSION=")[0].split("=")[1].replace('"',"")
             data["revision"] = Shell.cm_grep(cpuinfo, "Revision")[0].split(":")[1]
             data["hardware"] = Shell.cm_grep(cpuinfo, "Hardware")[0].split(":")[1]
