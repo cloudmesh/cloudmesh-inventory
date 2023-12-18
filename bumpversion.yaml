@@ -1,3 +1,5 @@
 bumpversion:
-- cloudmesh/inventory/__version__.py
+- src/cloudmesh/inventory/__init__.py
+- src/cloudmesh/inventory/__version__.py
+- pyproject.toml
 - VERSION
