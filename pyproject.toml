@@ -63,5 +63,5 @@ Issues = "https://github.com/cloudmesh/cloudmesh-inventory/issues"
 Changelog = "https://github.com/cloudmesh/cloudmesh-inventory/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
-where = ["src/"]
+where = ["src"]
 include = ["cloudmesh.inventory", "cloudmesh.inventory.*"]
